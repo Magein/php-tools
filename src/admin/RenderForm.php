@@ -1,10 +1,11 @@
 <?php
 
-namespace magein\php_tools\common\render;
+namespace magein\php_tools\admin;
 
+use magein\php_tools\admin\component\Item;
 use magein\php_tools\think\Dictionary;
 
-class FastForm
+class RenderForm
 {
     /**
      * @var array
@@ -105,7 +106,7 @@ class FastForm
     }
 
     /**
-     * @param string|RenderData $render
+     * @param string|Item $render
      * @param string $name
      * @param string $title
      * @param bool $required
@@ -115,7 +116,7 @@ class FastForm
      */
     public function properties($render, $name = '', $title = '', $required = true, $value = '', $attrs = [])
     {
-        if ($render instanceof RenderData) {
+        if ($render instanceof Item) {
             $type = $render->getType();
             $name = $render->getName();
             $title = $render->getTitle();
