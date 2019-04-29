@@ -1,0 +1,21 @@
+{
+  "name": "magein/php-tools",
+  "description": "常用类和thinkphp5开发用到的工具类",
+  "type": "library",
+  "homepage": "https://github.com/magein/php-tools",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "xiaomage",
+      "email": "1154699897@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "magein\\php_tools\\": "src/"
+    }
+  }
+}
