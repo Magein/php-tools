@@ -242,7 +242,7 @@ trait FastBuild
             $page = $classLogic->getPageParams();
         }
 
-        return new QueryResult($items, $page);
+        return new QueryResult($items ?: [], $page);
     }
 
     /**
