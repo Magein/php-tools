@@ -663,7 +663,7 @@ abstract class Logic
                 if ($item instanceof Model) {
                     $result = $toArray($item);
                     if ($this->returnArrayKey && $result[$this->returnArrayKey]) {
-                        $data[$result[$this->returnArrayKey]] = $data;
+                        $data[$result[$this->returnArrayKey]] = $result;
                     } else {
                         $data[] = $result;
                     }
