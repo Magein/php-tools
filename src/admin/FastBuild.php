@@ -226,7 +226,7 @@ trait FastBuild
         $classLogic = $this->getLogic();
 
         $items = [];
-        $page = '';
+        $page = [];
 
         if ($classLogic && method_exists($classLogic, $query_type)) {
 
