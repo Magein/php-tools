@@ -123,6 +123,11 @@ trait FastBuild
     protected $limit = 15;
 
     /**
+     * @var string
+     */
+    protected $order = 'id desc';
+
+    /**
      * 获取对应的类
      * 可选项: logic(业务类),dictionary(字典类),validate(验证类)
      * @param string $type
@@ -236,6 +241,8 @@ trait FastBuild
             if ($condition) {
                 $classLogic->setCondition($condition);
             }
+
+            $classLogic->setOrder($this->order);
 
             $items = call_user_func_array([$classLogic, $query_type], [$this->limit]);
 
