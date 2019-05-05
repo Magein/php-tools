@@ -132,9 +132,10 @@ trait FastBuild
      * 可选项: logic(业务类),dictionary(字典类),validate(验证类)
      * @param string $type
      * @param string 对应的类名
+     * @param string 命名空间
      * @return null
      */
-    protected function getClass($type = 'logic', $className = '')
+    protected function getClass($type = 'logic', $className = '', $namespace = 'app\component')
     {
         if (empty($className)) {
             $className = static::class;
@@ -154,7 +155,7 @@ trait FastBuild
         $class = $variable->transToPascal($class);
 
         // 获取命名空间
-        $namespace = 'app\component\\' . $dirName . '\\' . $class . ucfirst($type);
+        $namespace .= '\\' . $dirName . '\\' . $class . ucfirst($type);
 
         if (class_exists($namespace)) {
             return new $namespace();
