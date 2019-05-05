@@ -526,7 +526,7 @@ trait FastBuild
      * @param null $value
      * @return bool|false|int
      */
-    protected function updateField($id, $field, $value = null)
+    public function updateField($id, $field, $value = null)
     {
         if (empty($id) || empty($field) || $value === null) {
             return false;
