@@ -2,7 +2,6 @@
 
 namespace magein\php_tools\extra;
 
-
 use Phinx\Db\Adapter\MysqlAdapter;
 use think\migration\db\Table;
 

@@ -24,7 +24,7 @@ class Item
      * 名称
      * @var string
      */
-    private $name = '';
+    private $field = '';
 
     /**
      * 默认值
@@ -107,18 +107,18 @@ class Item
     /**
      * @return string
      */
-    public function getName(): string
+    public function getField(): string
     {
-        return $this->name;
+        return $this->field;
     }
 
     /**
-     * @param string $name
+     * @param string $field
      * @return $this
      */
-    public function setName(string $name)
+    public function setField(string $field)
     {
-        $this->name = $name;
+        $this->field = $field;
 
         return $this;
     }

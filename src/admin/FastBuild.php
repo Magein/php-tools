@@ -376,7 +376,7 @@ trait FastBuild
             foreach ($this->items() as $item) {
                 if (is_array($item)) {
                     $property = new Item($item);
-                    if (empty($property->getName())) {
+                    if (empty($property->getField())) {
                         continue;
                     }
                     call_user_func_array([$form, 'properties'], [$property]);
@@ -467,14 +467,14 @@ trait FastBuild
                 }
 
                 if (is_array($item)) {
-                    if (!isset($item['name']) || empty($item['name'])) {
+                    if (!isset($item['field']) || empty($item['field'])) {
                         continue;
                     }
 
                     $item['type'] = isset($item['type']) ?: 'select';
                 } else {
                     $item = [
-                        'name' => $item,
+                        'field' => $item,
                     ];
                 }
 
