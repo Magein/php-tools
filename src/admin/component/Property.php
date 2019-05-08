@@ -4,7 +4,7 @@ namespace magein\php_tools\admin\component;
 
 use magein\php_tools\traits\ObjectInit;
 
-class Item
+class Property
 {
     use ObjectInit;
 
@@ -12,64 +12,65 @@ class Item
      * 标题
      * @var string
      */
-    private $title = '';
+    protected $title = null;
 
     /**
      * 类型
      * @var string
      */
-    private $type = '';
+    protected $type = null;
 
     /**
      * 名称
      * @var string
      */
-    private $field = '';
+    protected $field = null;
 
     /**
      * 默认值
      * @var string|array
      */
-    private $value = '';
+    protected $value = null;
 
     /**
      * 是否必填
      * @var bool
      */
-    private $required = true;
+    protected $required = true;
 
     /**
      * placeholder
      * @var string
      */
-    private $placeholder = '';
+    protected $placeholder = null;
 
     /**
      * 选项
      * @var array
      */
-    private $option = [];
+    protected $option = [];
 
     /**
      * 其他属性
      * @var array
      */
-    private $attrs = [];
+    protected $attrs = [];
 
     /**
-     * @var string
+     * Item constructor.
+     * @param array $data
      */
-    private $express = '';
-
     public function __construct($data = [])
     {
+        $this->origin = $data;
+
         $this->init($data);
     }
 
     /**
      * @return string
      */
-    public function getTitle(): string
+    public function getTitle()
     {
         return $this->title;
     }
@@ -88,7 +89,7 @@ class Item
     /**
      * @return string
      */
-    public function getType(): string
+    public function getType()
     {
         return $this->type ?: 'text';
     }
@@ -107,7 +108,7 @@ class Item
     /**
      * @return string
      */
-    public function getField(): string
+    public function getField()
     {
         return $this->field;
     }
@@ -145,7 +146,7 @@ class Item
     /**
      * @return bool
      */
-    public function getRequired(): bool
+    public function getRequired()
     {
         return $this->required;
     }
@@ -164,7 +165,7 @@ class Item
     /**
      * @return string
      */
-    public function getPlaceholder(): string
+    public function getPlaceholder()
     {
         return $this->placeholder;
     }
@@ -183,7 +184,7 @@ class Item
     /**
      * @return array
      */
-    public function getOption(): array
+    public function getOption()
     {
         return $this->option;
     }
@@ -202,7 +203,7 @@ class Item
     /**
      * @return array
      */
-    public function getAttrs(): array
+    public function getAttrs()
     {
         return $this->attrs;
     }
@@ -214,25 +215,6 @@ class Item
     public function setAttrs(array $attrs)
     {
         $this->attrs = $attrs;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getExpress(): string
-    {
-        return $this->express ?: 'eq';
-    }
-
-    /**
-     * @param string $express
-     * @return $this
-     */
-    public function setExpress(string $express)
-    {
-        $this->express = $express;
 
         return $this;
     }

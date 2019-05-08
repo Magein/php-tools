@@ -2,7 +2,7 @@
 
 namespace magein\php_tools\admin;
 
-use magein\php_tools\admin\component\Item;
+use magein\php_tools\admin\component\Property;
 use magein\php_tools\common\Variable;
 use magein\php_tools\object\QueryResult;
 use magein\php_tools\think\Dictionary;
@@ -53,6 +53,12 @@ trait FastBuild
      * @var null
      */
     protected $width = null;
+
+    /**
+     * 表单的栅格值
+     * @var int
+     */
+    protected $grid = 8;
 
     /**
      * 隐藏全选框
@@ -193,6 +199,25 @@ trait FastBuild
     }
 
     /**
+     * 获取字典的数据信息
+     * @return array
+     */
+    protected function getWord()
+    {
+        static $dictionary;
+
+        if (empty($dictionary)) {
+            $dictionary = $this->getDictionary();
+        }
+
+        if ($dictionary) {
+            return $dictionary->word;
+        }
+
+        return [];
+    }
+
+    /**
      * @return array
      */
     protected function getLeftTopButton()
@@ -251,6 +276,32 @@ trait FastBuild
         }
 
         return new QueryResult($items ?: [], $page);
+    }
+
+    /**
+     * @param string $id
+     * @return array|bool
+     */
+    public function getData($id = '')
+    {
+        $data = [];
+
+        if ($id) {
+
+            $class = $this->getLogic();
+
+            if ($this->with) {
+                $class->setWith($this->with);
+            }
+
+            if ($this->append) {
+                $class->setAppendAttr($this->append);
+            }
+
+            $data = $class->get($id);
+        }
+
+        return $data;
     }
 
     /**
@@ -334,61 +385,88 @@ trait FastBuild
     /**
      * @return array
      */
-    protected function items()
+    protected function form()
     {
         return [];
     }
 
     /**
-     * 构建渲染的表单项
-     * @param mixed $id
-     * @param null $dictionary
-     * @return RenderForm
+     * @param $data
+     * @return Property
      */
-    protected function buildForm($id = null, $dictionary = null)
+    protected function property($data)
     {
-        $id = intval($id);
+        $property = new Property();
 
-        $class = $this->getLogic();
+        // 识别一个字符串
+        if (is_string($data)) {
+            $property->setField($data);
+        } else {
+            // 识别带键值的数据
+            if (isset($data['field'])) {
+                $data['type'] = isset($data['type']) ? $data['type'] : 'select';
+                $property->init($data);
+            } else {
+                /**
+                 * 下面是懒到极致的写法
+                 *
+                 * 不建议用，不限制用
+                 */
+                $field = isset($data[0]) ? $data[0] : '';
+                $property->setField($field);
 
-        $data = [];
-
-        if ($id) {
-
-            if ($this->with) {
-                $class->setWith($this->with);
-            }
-
-            if ($this->append) {
-                $class->setAppendAttr($this->append);
-            }
-
-            $data = $class->get($id);
-        }
-
-        if (empty($dictionary)) {
-            $dictionary = $this->getDictionary();
-        }
-
-        $form = new RenderForm($data, $dictionary);
-
-        if ($this->items()) {
-            foreach ($this->items() as $item) {
-                if (is_array($item)) {
-                    $property = new Item($item);
-                    if (empty($property->getField())) {
-                        continue;
+                /**
+                 * 兼容
+                 * ['scene',[1=>'公司',2=>'家']]
+                 * ['intro','textArea']
+                 * ['name','text']
+                 */
+                $type = isset($data[1]) ? $data[1] : '';
+                if ($type) {
+                    if (is_array($type)) {
+                        $property->setType('select');
+                        $property->setOption($type);
+                    } elseif (is_string($type)) {
+                        $property->setType($type);
                     }
-                    call_user_func_array([$form, 'properties'], [$property]);
-                } elseif ($item instanceof Item) {
-                    call_user_func_array([$form, 'properties'], [$item]);
-                } else {
-                    $form->setText($item);
+                }
+
+                /**
+                 * 兼容
+                 * ['scene','select',[1=>'公司',2=>'家']]
+                 * ['scene','radio',[1=>'公司',2=>'家']]
+                 */
+                $option = isset($data[2]) ? $data[2] : [];
+                if ($option) {
+                    $property->setOption($option);
                 }
             }
         }
 
-        return $form;
+        return $property;
+    }
+
+    /**
+     * @param $items
+     * @param array $data
+     * @param array $dictionary
+     * @return array|RenderForm
+     */
+    protected function buildForm($items, $data = [], $dictionary = [])
+    {
+        $dictionary = $dictionary ?: $this->getWord();
+
+        $render = new RenderForm($data, $dictionary);
+
+        if (!is_array($items) || empty($items)) {
+            return $render;
+        }
+
+        foreach ($items as $item) {
+            $render->append($this->property($item));
+        }
+
+        return $render;
     }
 
     /**
@@ -440,49 +518,6 @@ trait FastBuild
     protected function search()
     {
         return [];
-    }
-
-    /**
-     * @param array $data
-     * @param array $dictionary
-     * @return RenderForm
-     */
-    protected function getSearch($data = [], $dictionary = [])
-    {
-        if (empty($dictionary)) {
-            $dictionary = $this->getClass(Constant::CLASS_TYPE_DICTIONARY);
-        }
-
-        $items = $this->search();
-
-        $form = new RenderForm($data, $dictionary);
-        $renderData = new Item();
-
-        if ($items) {
-            foreach ($items as $item) {
-
-                if ($item instanceof Item) {
-                    $form->properties($item);
-                    continue;
-                }
-
-                if (is_array($item)) {
-                    if (!isset($item['field']) || empty($item['field'])) {
-                        continue;
-                    }
-
-                    $item['type'] = isset($item['type']) ?: 'select';
-                } else {
-                    $item = [
-                        'field' => $item,
-                    ];
-                }
-
-                $form->properties($renderData->init($item));
-            }
-        }
-
-        return $form;
     }
 
     /**

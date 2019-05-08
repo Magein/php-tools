@@ -2,30 +2,27 @@
 
 namespace magein\php_tools\admin;
 
-use magein\php_tools\admin\component\Item;
-use magein\php_tools\think\Dictionary;
+use magein\php_tools\admin\component\Property;
 
 class RenderForm
 {
     /**
+     * 要渲染的表单项
      * @var array
      */
-    private $formItems = [];
+    private $items = [];
 
     /**
+     * 表单项中需要回填的数据
      * @var array
      */
     private $data = [];
 
     /**
+     * 字典信息，用于描述表单项
      * @var array
      */
-    private $value = [];
-
-    /**
-     * @var array
-     */
-    private $title = [];
+    private $dictionary = [];
 
     /**
      * FastForm constructor.
@@ -36,100 +33,59 @@ class RenderForm
     {
         $this->setData($data);
 
-        $this->setTitle($dictionary);
+        $this->setDictionary($dictionary);
     }
 
     /**
-     * 组合好后用于重置选项，如继承类，子类中不需要父类中那么多选项，调用items后，unset掉后在调用此方法重置即可
-     * @param $item
-     */
-    public function setItems($item)
-    {
-        $this->formItems = $item;
-    }
-
-    /**
+     * 这里是预留的信息，后续用于在后端生成html表单项
      * @return array
      */
-    public function items()
+    public function render()
     {
-        return $this->formItems;
+        return $this->items;
     }
 
     /**
      * 设置title
      * @param $dictionary
      */
-    private function setTitle($dictionary)
+    public function setDictionary($dictionary)
     {
-
-        $title = [];
-
-        if (is_array($dictionary)) {
-            $title = $dictionary;
-        } else {
-            if (is_object($dictionary)) {
-                $instance = $dictionary;
-            } else {
-                $instance = $dictionary ? new $dictionary() : null;
-            }
-            $word = 'word';
-            if ($instance && property_exists($instance, $word)) {
-                $title = $instance->$word;
-            }
-        }
-
-        $this->title = array_merge(
-            (new Dictionary())->word,
-            $title
-        );
+        $this->dictionary = $dictionary;
     }
 
     /**
      * @param $data
      */
-    private function setData($data)
+    public function setData($data)
     {
         $this->data = $data;
+    }
 
-        if (isset($data['id'])) {
-            $this->setHidden('id');
-        }
+    /**
+     * 组合好后用于重置选项，如继承类，子类中不需要父类中那么多选项，调用items后，unset掉后在调用此方法重置即可
+     * @param $items
+     */
+    public function setItems($items)
+    {
+        $this->items = $items;
     }
 
     /**
      * @return array
      */
-    public function getValue()
+    public function getItems()
     {
-        return $this->value;
+        return $this->items;
     }
 
     /**
-     * @param string|Item $render
-     * @param string $field
-     * @param string $title
-     * @param bool $required
-     * @param string|array $value
-     * @param array $attrs
+     * @param Property $property
      * @return array
      */
-    public function properties($render, $field = '', $title = '', $required = true, $value = '', $attrs = [])
+    public function append(Property $property)
     {
-        if ($render instanceof Item) {
-            $type = $render->getType();
-            $field = $render->getField();
-            $title = $render->getTitle();
-            $required = $render->getRequired();
-            $value = $render->getValue();
-            $attrs = $render->getAttrs();
-            $option = $render->getOption();
-            $express = $render->getExpress();
-        } else {
-            $type = $render;
-            $option = null;
-            $express = 'eq';
-        }
+        $field = $property->getField();
 
         if (empty($field)) {
             return [];
@@ -138,43 +94,61 @@ class RenderForm
         /**
          * 设置默认的标题
          */
-        if (empty($title) && $this->title) {
-            $title = isset($this->title[$field]) ? $this->title[$field] : $field;
+        if (empty($property->getTitle())) {
+            $title = isset($this->dictionary[$field]) ? $this->dictionary[$field] : $property->getField();
+            $property->setTitle($title);
         }
 
         /**
-         * 设置默认的值
+         * 设置默认值，如果传递的数据中包含该字段的值，则覆盖
          */
         if (isset($this->data[$field])) {
-            $value = $this->data[$field];
-        }
-        $this->value[$field] = $value;
-
-        $properties = [
-            'type' => $type,
-            'name' => $field,
-            'title' => $title,
-            'required' => $required,
-            'value' => $value,
-            'option' => $option,
-            'attrs' => $attrs,
-            'express' => $express
-        ];
-
-        if (!isset($properties['placeholder'])) {
-            $properties['placeholder'] = '请输入' . $title;
+            $property->setValue($this->data[$field]);
         }
 
-        $this->formItems[$field] = $properties;
+        if (empty($property->getPlaceholder())) {
+            $property->setPlaceholder('请输入' . $property->getTitle());
+        }
+
+        $properties = $property->toArray();
+
+        /**
+         * 这里可以优化，通过传递参数是否加载传递的源数据
+         *
+         * 暂时全部传递
+         */
+        $properties['origin'] = $property->getOrigin();
+
+        $this->items[$field] = $properties;
 
         return $properties;
     }
 
     /**
-     * @param string $field
-     * @param string $title
+     * @param $type
+     * @param $field
+     * @param string $value
      * @param bool $required
-     * @param mixed $value
+     * @param null $title
+     * @param array $attrs
+     */
+    private function properties($type, $field, $value = '', $required = true, $title = null, $attrs = [])
+    {
+        $property = new Property();
+        $property->setType($type);
+        $property->setField($field);
+        $property->setValue($value);
+        $property->setTitle($title);
+        $property->setRequired($required);
+        $property->setAttrs($attrs);
+        $this->append($property);
+    }
+
+    /**
+     * @param $field
+     * @param string $value
+     * @param bool $required
+     * @param null $title
      * @param array $attrs
      * @return $this
      */
