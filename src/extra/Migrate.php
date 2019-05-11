@@ -87,6 +87,9 @@ class Migrate
             }
         }
 
+        // 获取后，清除追加的元素，方式对后续的表格照成影响
+        self::setAppend([]);
+
         return $table;
     }
 }

@@ -114,7 +114,7 @@ abstract class Logic
     /**
      * @var string
      */
-    protected $returnArrayKey = '';
+    protected $returnArrayKey = 'id';
 
     /**
      * @var array
