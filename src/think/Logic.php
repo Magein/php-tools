@@ -141,6 +141,11 @@ abstract class Logic
     protected $pageRender = '';
 
     /**
+     * @var array
+     */
+    protected $list = [];
+
+    /**
      * @var null
      */
     protected static $instance = [];
@@ -531,7 +536,26 @@ abstract class Logic
             }
         }
 
-        return $this->toArray($items);
+        $this->list = $this->toArray($items);
+
+        return $this->list;
+    }
+
+    /**
+     * @param int $limit
+     * @param bool $resetKey
+     * @return array
+     */
+    public function getResult($limit = 15, $resetKey = true)
+    {
+        if (empty($this->list)) {
+            $this->paginate($limit);
+        }
+
+        return [
+            'pages' => $this->getPageParams(),
+            'list' => $resetKey ? ($this->list ? array_values($this->list) : []) : $this->list,
+        ];
     }
 
     /**
