@@ -33,3 +33,7 @@
  
  2019-05-11
  * 删除admin文件夹
+ 
+ 2019-05-14
+ * think目录下增加ApiReturn.php 用于相应接口请求
+ * think目录下增加ApiService.php 用于为接口提供服务(处理参数，返回数据)
