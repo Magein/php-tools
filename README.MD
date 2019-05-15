@@ -37,3 +37,4 @@
  2019-05-14
  * think目录下增加ApiReturn.php 用于相应接口请求
  * think目录下增加ApiService.php 用于为接口提供服务(处理参数，返回数据)
+ * think目录下增加ApiException.php 用于为接口处理http请求错误信息（返回json数据）
