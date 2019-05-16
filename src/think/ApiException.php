@@ -1,7 +1,6 @@
 <?php
 
-namespace app\common\extra;
-
+namespace magein\php_tools\think;
 
 use magein\php_tools\think\ApiReturn;
 use think\exception\Handle;
