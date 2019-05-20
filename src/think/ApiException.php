@@ -6,7 +6,6 @@ use think\Config;
 use think\exception\Handle;
 use think\exception\HttpException;
 use think\exception\PDOException;
-use think\exception\ThrowableError;
 
 class ApiException extends Handle
 {
@@ -15,6 +14,7 @@ class ApiException extends Handle
         $code = 0;
 
         if ($e instanceof HttpException) {
+            $code = $e->getStatusCode();
             $message = $e->getMessage();
             $data = $e->getHeaders();
         } else {
@@ -30,7 +30,6 @@ class ApiException extends Handle
              */
 
             $message = 'error ：';
-            $data = $e->getMessage();
             if ($e instanceof PDOException) {
                 $message .= 'db';
                 $data = $e->getMessage();

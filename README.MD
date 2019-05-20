@@ -41,3 +41,4 @@
  
  2019-05-20
  * common下增加TreeStructure类，用于处理树结构数据
+ * ApiException类优化返回的错误信息
