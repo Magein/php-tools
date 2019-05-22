@@ -28,29 +28,63 @@ class UEditor
     private $fileType; //文件类型
     private $stateInfo; //上传状态信息,
     private $stateMap = array( //上传状态映射表，国际化用户需考虑此处数据的国际化
-        "SUCCESS", //上传成功标记，在UEditor中内不可改变，否则flash判断会出错
-        "文件大小超出 upload_max_filesize 限制",
-        "文件大小超出 MAX_FILE_SIZE 限制",
-        "文件未被完整上传",
-        "没有文件被上传",
-        "上传文件为空",
-        "ERROR_TMP_FILE" => "临时文件错误",
-        "ERROR_TMP_FILE_NOT_FOUND" => "找不到临时文件",
-        "ERROR_SIZE_EXCEED" => "文件大小超出网站限制",
-        "ERROR_TYPE_NOT_ALLOWED" => "文件类型不允许",
-        "ERROR_CREATE_DIR" => "目录创建失败",
-        "ERROR_DIR_NOT_WRITEABLE" => "目录没有写权限",
-        "ERROR_FILE_MOVE" => "文件保存时出错",
-        "ERROR_FILE_NOT_FOUND" => "找不到上传文件",
-        "ERROR_WRITE_CONTENT" => "写入文件内容错误",
-        "ERROR_UNKNOWN" => "未知错误",
-        "ERROR_DEAD_LINK" => "链接不可用",
-        "ERROR_HTTP_LINK" => "链接不是http链接",
-        "ERROR_HTTP_CONTENTTYPE" => "链接contentType不正确",
-        "INVALID_URL" => "非法 URL",
-        "INVALID_IP" => "非法 IP"
+        'SUCCESS', //上传成功标记，在UEditor中内不可改变，否则flash判断会出错
+        '文件大小超出 upload_max_filesize 限制',
+        '文件大小超出 MAX_FILE_SIZE 限制',
+        '文件未被完整上传',
+        '没有文件被上传',
+        '上传文件为空',
+        'ERROR_TMP_FILE' => '临时文件错误',
+        'ERROR_TMP_FILE_NOT_FOUND' => '找不到临时文件',
+        'ERROR_SIZE_EXCEED' => '文件大小超出网站限制',
+        'ERROR_TYPE_NOT_ALLOWED' => '文件类型不允许',
+        'ERROR_CREATE_DIR' => '目录创建失败',
+        'ERROR_DIR_NOT_WRITEABLE' => '目录没有写权限',
+        'ERROR_FILE_MOVE' => '文件保存时出错',
+        'ERROR_FILE_NOT_FOUND' => '找不到上传文件',
+        'ERROR_WRITE_CONTENT' => '写入文件内容错误',
+        'ERROR_UNKNOWN' => '未知错误',
+        'ERROR_DEAD_LINK' => '链接不可用',
+        'ERROR_HTTP_LINK' => '链接不是http链接',
+        'ERROR_HTTP_CONTENTTYPE' => '链接contentType不正确',
+        'INVALID_URL' => '非法 URL',
+        'INVALID_IP' => '非法 IP'
     );
 
+    /**
+     * 兼用web接口访问
+     *
+     * 使用场景：为小程序，app提供接口的时候，图片如果是基于项目目录下回导致访问失败
+     *
+     * @var bool
+     */
+    private $useWebUrl = true;
+
+    /**
+     * @var string
+     */
+    private $host = '';
+
+    /**
+     * @param $host
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+    }
+
+    /**
+     * @param bool $use
+     */
+    public function setUseWebUrl(bool $use = true)
+    {
+        $this->useWebUrl = $use ? true : false;
+    }
+
+    /**
+     * @param $params
+     * @return array|false|string
+     */
     public function init($params)
     {
 
@@ -93,17 +127,17 @@ class UEditor
         $file = $this->file;
 
         if (!$file) {
-            $this->stateInfo = $this->getStateInfo("ERROR_FILE_NOT_FOUND");
+            $this->stateInfo = $this->getStateInfo('ERROR_FILE_NOT_FOUND');
             return;
         }
         if ($file['error']) {
             $this->stateInfo = $this->getStateInfo($file['error']);
             return;
         } else if (!file_exists($file['tmp_name'])) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TMP_FILE_NOT_FOUND");
+            $this->stateInfo = $this->getStateInfo('ERROR_TMP_FILE_NOT_FOUND');
             return;
         } else if (!is_uploaded_file($file['tmp_name'])) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TMPFILE");
+            $this->stateInfo = $this->getStateInfo('ERROR_TMPFILE');
             return;
         }
 
@@ -116,30 +150,28 @@ class UEditor
         $dirname = dirname($this->filePath);
         //检查文件大小是否超出限制
         if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
+            $this->stateInfo = $this->getStateInfo('ERROR_SIZE_EXCEED');
             return;
         }
 
         //检查是否不允许的文件格式
         if (!$this->checkType()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TYPE_NOT_ALLOWED");
+            $this->stateInfo = $this->getStateInfo('ERROR_TYPE_NOT_ALLOWED');
             return;
         }
-        \think\Log::write($dirname);
-        \think\Log::write(file_exists($dirname));
 
         //创建目录失败
         if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
+            $this->stateInfo = $this->getStateInfo('ERROR_CREATE_DIR');
             return;
         } else if (!is_writeable($dirname)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DIR_NOT_WRITEABLE");
+            $this->stateInfo = $this->getStateInfo('ERROR_DIR_NOT_WRITEABLE');
             return;
         }
 
         //移动文件
-        if (!(move_uploaded_file($file["tmp_name"], $this->filePath) && file_exists($this->filePath))) { //移动失败
-            $this->stateInfo = $this->getStateInfo("ERROR_FILE_MOVE");
+        if (!(move_uploaded_file($file['tmp_name'], $this->filePath) && file_exists($this->filePath))) { //移动失败
+            $this->stateInfo = $this->getStateInfo('ERROR_FILE_MOVE');
         } else { //移动成功
             $this->stateInfo = $this->stateMap[0];
         }
@@ -164,22 +196,22 @@ class UEditor
 
         //检查文件大小是否超出限制
         if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
+            $this->stateInfo = $this->getStateInfo('ERROR_SIZE_EXCEED');
             return;
         }
 
         //创建目录失败
         if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
+            $this->stateInfo = $this->getStateInfo('ERROR_CREATE_DIR');
             return;
         } else if (!is_writeable($dirname)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DIR_NOT_WRITEABLE");
+            $this->stateInfo = $this->getStateInfo('ERROR_DIR_NOT_WRITEABLE');
             return;
         }
 
         //移动文件
         if (!(file_put_contents($this->filePath, $img) && file_exists($this->filePath))) { //移动失败
-            $this->stateInfo = $this->getStateInfo("ERROR_WRITE_CONTENT");
+            $this->stateInfo = $this->getStateInfo('ERROR_WRITE_CONTENT');
         } else { //移动成功
             $this->stateInfo = $this->stateMap[0];
         }
@@ -193,11 +225,11 @@ class UEditor
     private function saveRemote()
     {
         $imgUrl = htmlspecialchars($this->fileField);
-        $imgUrl = str_replace("&amp;", "&", $imgUrl);
+        $imgUrl = str_replace('&amp;', '&', $imgUrl);
 
         //http开头验证
-        if (strpos($imgUrl, "http") !== 0) {
-            $this->stateInfo = $this->getStateInfo("ERROR_HTTP_LINK");
+        if (strpos($imgUrl, 'http') !== 0) {
+            $this->stateInfo = $this->getStateInfo('ERROR_HTTP_LINK');
             return;
         }
 
@@ -206,7 +238,7 @@ class UEditor
 
         // 判断是否是合法 url
         if (!filter_var($host_with_protocol, FILTER_VALIDATE_URL)) {
-            $this->stateInfo = $this->getStateInfo("INVALID_URL");
+            $this->stateInfo = $this->getStateInfo('INVALID_URL');
             return;
         }
 
@@ -217,20 +249,20 @@ class UEditor
         $ip = gethostbyname($host_without_protocol);
         // 判断是否是私有 ip
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
-            $this->stateInfo = $this->getStateInfo("INVALID_IP");
+            $this->stateInfo = $this->getStateInfo('INVALID_IP');
             return;
         }
 
         //获取请求头并检测死链
         $heads = get_headers($imgUrl, 1);
-        if (!(stristr($heads[0], "200") && stristr($heads[0], "OK"))) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DEAD_LINK");
+        if (!(stristr($heads[0], '200') && stristr($heads[0], 'OK'))) {
+            $this->stateInfo = $this->getStateInfo('ERROR_DEAD_LINK');
             return;
         }
         //格式验证(扩展名验证和Content-Type验证)
         $fileType = strtolower(strrchr($imgUrl, '.'));
-        if (!in_array($fileType, $this->config['allowFiles']) || !isset($heads['Content-Type']) || !stristr($heads['Content-Type'], "image")) {
-            $this->stateInfo = $this->getStateInfo("ERROR_HTTP_CONTENTTYPE");
+        if (!in_array($fileType, $this->config['allowFiles']) || !isset($heads['Content-Type']) || !stristr($heads['Content-Type'], 'image')) {
+            $this->stateInfo = $this->getStateInfo('ERROR_HTTP_CONTENTTYPE');
             return;
         }
 
@@ -244,9 +276,9 @@ class UEditor
         readfile($imgUrl, false, $context);
         $img = ob_get_contents();
         ob_end_clean();
-        preg_match("/[\/]([^\/]*)[\.]?[^\.\/]*$/", $imgUrl, $m);
+        preg_match('/[\/]([^\/]*)[\.]?[^\.\/]*$/', $imgUrl, $m);
 
-        $this->oriName = $m ? $m[1] : "";
+        $this->oriName = $m ? $m[1] : '';
         $this->fileSize = strlen($img);
         $this->fileType = $this->getFileExt();
         $this->fullName = $this->getFullName();
@@ -256,22 +288,22 @@ class UEditor
 
         //检查文件大小是否超出限制
         if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
+            $this->stateInfo = $this->getStateInfo('ERROR_SIZE_EXCEED');
             return;
         }
 
         //创建目录失败
         if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
+            $this->stateInfo = $this->getStateInfo('ERROR_CREATE_DIR');
             return;
         } else if (!is_writeable($dirname)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DIR_NOT_WRITEABLE");
+            $this->stateInfo = $this->getStateInfo('ERROR_DIR_NOT_WRITEABLE');
             return;
         }
 
         //移动文件
         if (!(file_put_contents($this->filePath, $img) && file_exists($this->filePath))) { //移动失败
-            $this->stateInfo = $this->getStateInfo("ERROR_WRITE_CONTENT");
+            $this->stateInfo = $this->getStateInfo('ERROR_WRITE_CONTENT');
         } else { //移动成功
             $this->stateInfo = $this->stateMap[0];
         }
@@ -285,7 +317,7 @@ class UEditor
      */
     private function getStateInfo($errCode)
     {
-        return !$this->stateMap[$errCode] ? $this->stateMap["ERROR_UNKNOWN"] : $this->stateMap[$errCode];
+        return !$this->stateMap[$errCode] ? $this->stateMap['ERROR_UNKNOWN'] : $this->stateMap[$errCode];
     }
 
     /**
@@ -305,26 +337,26 @@ class UEditor
     {
         //替换日期事件
         $t = time();
-        $d = explode('-', date("Y-y-m-d-H-i-s"));
-        $format = $this->config["pathFormat"];
-        $format = str_replace("{yyyy}", $d[0], $format);
-        $format = str_replace("{yy}", $d[1], $format);
-        $format = str_replace("{mm}", $d[2], $format);
-        $format = str_replace("{dd}", $d[3], $format);
-        $format = str_replace("{hh}", $d[4], $format);
-        $format = str_replace("{ii}", $d[5], $format);
-        $format = str_replace("{ss}", $d[6], $format);
-        $format = str_replace("{time}", $t, $format);
+        $d = explode('-', date('Y-y-m-d-H-i-s'));
+        $format = $this->config['pathFormat'];
+        $format = str_replace('{yyyy}', $d[0], $format);
+        $format = str_replace('{yy}', $d[1], $format);
+        $format = str_replace('{mm}', $d[2], $format);
+        $format = str_replace('{dd}', $d[3], $format);
+        $format = str_replace('{hh}', $d[4], $format);
+        $format = str_replace('{ii}', $d[5], $format);
+        $format = str_replace('{ss}', $d[6], $format);
+        $format = str_replace('{time}', $t, $format);
 
         //过滤文件名的非法自负,并替换文件名
         $oriName = substr($this->oriName, 0, strrpos($this->oriName, '.'));
-        $oriName = preg_replace("/[\|\?\"\<\>\/\*\\\\]+/", '', $oriName);
-        $format = str_replace("{filename}", $oriName, $format);
+        $oriName = preg_replace('/[\|\?\'\<\>\/\*\\\\]+/', '', $oriName);
+        $format = str_replace('{filename}', $oriName, $format);
 
         //替换随机字符串
         $randNum = rand(1, 999999999) . rand(1, 999999999);
-        if (preg_match("/\{rand\:([\d]*)\}/i", $format, $matches)) {
-            $format = preg_replace("/\{rand\:[\d]*\}/i", substr($randNum, 0, $matches[1]), $format);
+        if (preg_match('/\{rand\:([\d]*)\}/i', $format, $matches)) {
+            $format = preg_replace('/\{rand\:[\d]*\}/i', substr($randNum, 0, $matches[1]), $format);
         }
 
         $ext = $this->getFileExt();
@@ -371,7 +403,7 @@ class UEditor
      */
     private function checkType()
     {
-        return in_array($this->getFileExt(), $this->config["allowFiles"]);
+        return in_array($this->getFileExt(), $this->config['allowFiles']);
     }
 
     /**
@@ -380,7 +412,7 @@ class UEditor
      */
     private function checkSize()
     {
-        return $this->fileSize <= ($this->config["maxSize"]);
+        return $this->fileSize <= ($this->config['maxSize']);
     }
 
     /**
@@ -389,13 +421,34 @@ class UEditor
      */
     public function getFileInfo()
     {
+
+        $url = $this->savePath . $this->fullName;
+
+        if ($this->useWebUrl) {
+            if (empty($this->host)) {
+                $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+            } else {
+                $host = $this->host;
+            }
+
+            $host = trim($host, '/');
+
+            if (!preg_match('/^http/', $host)) {
+                $host = 'http://' . $host;
+            }
+
+            $url = $host . '/' . $url;
+        } else {
+            $url = '/' . $url;
+        }
+
         return array(
-            "state" => $this->stateInfo,
-            "url" => '/' . $this->savePath . $this->fullName,
-            "title" => $this->fileName,
-            "original" => $this->oriName,
-            "type" => $this->fileType,
-            "size" => $this->fileSize
+            'state' => $this->stateInfo,
+            'url' => $url,
+            'title' => $this->fileName,
+            'original' => $this->oriName,
+            'type' => $this->fileType,
+            'size' => $this->fileSize
         );
     }
 

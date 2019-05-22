@@ -42,3 +42,6 @@
  2019-05-20
  * common下增加TreeStructure类，用于处理树结构数据
  * ApiException类优化返回的错误信息
+ 
+ 2019-05-22
+ * 优化ueditor和upload类，上传图片后返回的路径信息默认使用包含host模式
