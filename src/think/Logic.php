@@ -4,6 +4,7 @@ namespace magein\php_tools\think;
 
 use magein\php_tools\common\Variable;
 use magein\php_tools\traits\Error;
+use think\Exception;
 use think\Model;
 use think\Paginator;
 use think\paginator\driver\Bootstrap;
@@ -887,18 +888,23 @@ abstract class Logic
     /**
      * @param $data
      * @return array|false
-     * @throws \Exception
      */
     public function saveAll($data)
     {
-        return $this->model()->saveAll($data);
+        try {
+            $result = $this->model()->saveAll($data);
+        } catch (Exception $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
+
+        return $result;
     }
 
     /**
      * @param string $field
      * @param int $step
      * @return bool|int|true
-     * @throws \think\Exception
      */
     public function setDec($field, $step)
     {
@@ -906,7 +912,12 @@ abstract class Logic
             return false;
         }
 
-        $result = $this->model()->where($this->condition)->setDec($field, $step);
+        try {
+            $result = $this->model()->where($this->condition)->setDec($field, $step);
+        } catch (Exception $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
 
         $this->setCondition([]);
 
@@ -917,7 +928,6 @@ abstract class Logic
      * @param $field
      * @param $step
      * @return bool|int|true
-     * @throws \think\Exception
      */
     public function setInc($field, $step)
     {
@@ -925,7 +935,12 @@ abstract class Logic
             return false;
         }
 
-        $result = $this->model()->where($this->condition)->setInc($field, $step);
+        try {
+            $result = $this->model()->where($this->condition)->setInc($field, $step);
+        } catch (Exception $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
 
         $this->setCondition([]);
 
