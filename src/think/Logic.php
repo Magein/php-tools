@@ -668,7 +668,7 @@ abstract class Logic
                     // 转化成下划线格式
                     unset($model[$many]);
                     $many = $variable->transToUnderline($many);
-                    $record[$many] = $many_data ? $many_data : null;
+                    $model[$many] = $many_data ? $many_data : null;
                 }
             }
 
