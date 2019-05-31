@@ -48,3 +48,7 @@
  
  2019-05-30
  * 优化logic中一对多模型，变量错误，导致查询的结果中没有相关数据
+ 
+ 2019-05-31
+ * 优化logic中的setPage方法，由private修改为protected
+ * 优化logic中的select逻辑语法

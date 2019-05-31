@@ -5,6 +5,7 @@ namespace magein\php_tools\think;
 use magein\php_tools\common\Variable;
 use magein\php_tools\traits\Error;
 use think\Exception;
+use think\exception\DbException;
 use think\Model;
 use think\Paginator;
 use think\paginator\driver\Bootstrap;
@@ -430,7 +431,15 @@ abstract class Logic
     {
         $db = $this->db();
 
-        $records = call_user_func_array([$db, 'select'], []);
+        /**
+         * select查询出来的是数组，数组中的每一项是一个model对象
+         */
+        try {
+            $records = $db->select();
+        } catch (DbException $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
 
         /**
          * 预处理查询，预处理需要先查询出数据后，在使用关键的字段进行查询
@@ -445,11 +454,20 @@ abstract class Logic
             if ($pk) {
                 $db = $this->db();
                 $db->with($this->with);
-                $records = call_user_func_array([$db, 'select'], [$pk]);
+                try {
+                    $records = $db->select($pk);
+                } catch (DbException $exception) {
+                    $this->setError($exception->getMessage());
+                    return false;
+                }
             }
         }
 
-        return $this->toArray($records);
+        if (isset($records)) {
+            return $this->toArray($records);
+        }
+
+        return false;
     }
 
     /**
@@ -458,7 +476,7 @@ abstract class Logic
      * @param int $limit
      * @return array
      */
-    private function setPage($records, $limit = 15)
+    protected function setPage($records, $limit = 15)
     {
         $pages = [
             // 总数
@@ -498,22 +516,39 @@ abstract class Logic
 
     /**
      * @param int $limit
-     * @return array
+     * @return array|bool
      */
     public function paginate($limit = 15)
     {
         $db = $this->db();
 
-        /**
-         * @var Paginator $records
-         */
-        $records = call_user_func_array([$db, 'paginate'], [$limit]);
+        try {
+            /**
+             * @var Paginator $records
+             */
+            $records = $db->paginate($limit);
+        } catch (DbException $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
 
         /**
          * 分页信息
          */
         $this->setPage($records, $limit);
 
+        $this->list = $this->transPaginator($records);
+
+        return $this->list;
+    }
+
+    /**
+     * 分页查询的数据转化为数组
+     * @param Paginator $records
+     * @return array|Model
+     */
+    protected function transPaginator($records)
+    {
         $items = $records->items();
 
         if ($items) {
@@ -537,9 +572,7 @@ abstract class Logic
             }
         }
 
-        $this->list = $this->toArray($items);
-
-        return $this->list;
+        return $this->toArray($items);
     }
 
     /**
@@ -616,7 +649,7 @@ abstract class Logic
      * 方法名称作为键的方式把对应的数据传给外部使用,默认使用下划线的方式
      *
      * 如方法名是: goodInfo(),  那最终在字段里面显示是  good_info:{id:xx,title:xx}
-     * @param Model $record
+     * @param array|Model $record
      * @return array|Model
      */
     protected function toArray($record)
@@ -887,13 +920,13 @@ abstract class Logic
 
     /**
      * @param $data
-     * @return array|false
+     * @return array|bool|false
      */
     public function saveAll($data)
     {
         try {
             $result = $this->model()->saveAll($data);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->setError($exception->getMessage());
             return false;
         }
@@ -962,9 +995,14 @@ abstract class Logic
 
         $model->whereTime($timeField, $time);
 
-        $records = call_user_func_array([$model, 'select'], []);
+        try {
+            $records = $model->select();
+        } catch (DbException $exception) {
+            $this->setError($exception->getMessage());
+            return false;
+        }
 
-        if ($records) {
+        if (isset($records)) {
             foreach ($records as $key => $record) {
                 $records[$key] = $this->toArray($record);
             }
