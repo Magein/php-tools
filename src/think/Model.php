@@ -58,9 +58,10 @@ class Model extends \think\Model
 
     /**
      * @param $value
+     * @param $data
      * @return false|string
      */
-    protected function getStartTimeAttr($value)
+    protected function getStartTimeAttr($value, $data)
     {
         if ($value) {
             return date('Y-m-d H:i:s', $value);
@@ -83,9 +84,10 @@ class Model extends \think\Model
 
     /**
      * @param $value
+     * @param $data
      * @return false|string
      */
-    protected function getEndTimeAttr($value)
+    protected function getEndTimeAttr($value, $data)
     {
         if ($value) {
             return date('Y-m-d H:i:s', $value);
