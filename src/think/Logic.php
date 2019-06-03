@@ -34,6 +34,8 @@ abstract class Logic
 
     const ERROR_PARAMS_NOT_NULL = '参数不能为空，请确认';
 
+    const ERROR_RECORD_IS_NULL = '参数错误，请重试';
+
     const ERROR_SERVICE_ERROR = '服务器内部错误，请稍后再试';
 
     const ERROR_OPERATION_FAIL = '操作失败，请稍后再试';
@@ -869,7 +871,16 @@ abstract class Logic
             $condition[$this->primaryKey] = $pkValue;
         }
 
-        $result = $model->save([$field => $value], $condition);
+        $record = $model->where($condition)->find();
+
+        if (empty($record)) {
+            $this->setError(self::ERROR_RECORD_IS_NULL);
+            return false;
+        }
+
+        $record->$field = $value;
+
+        $result = $record->save();
 
         if (false === $result) {
             return false;
