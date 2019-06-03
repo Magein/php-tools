@@ -55,3 +55,4 @@
  
  2019-06-03
  * 使用自定的UnixTime替代内置的 strtotime 用法
+ * 优化extra下的Model模型，增加了startTime和endTime字段的获取器和修改器
