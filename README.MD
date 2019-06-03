@@ -52,3 +52,6 @@
  2019-05-31
  * 优化logic中的setPage方法，由private修改为protected
  * 优化logic中的select逻辑语法
+ 
+ 2019-06-03
+ * 使用自定的UnixTime替代内置的 strtotime 用法
