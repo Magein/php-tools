@@ -87,11 +87,15 @@ class Upload
          *
          * 在展示的时候基于项目根目录展示，
          */
-
         if ($info) {
+
+            $url = trim($this->savePath . $info->getSaveName(), '.');
+
+            $url = str_replace('\\', '/', $url);
+
             return [
-                'url' => trim($this->savePath . $info->getSaveName(), '.'),
-                'save_name' => $info->getSaveName(),
+                'url' => $url,
+                'save_name' => str_replace('\\', '/', $info->getSaveName()),
                 'file_name' => $info->getFilename(),
             ];
         }
@@ -109,6 +113,6 @@ class Upload
      */
     public function image($file = null, $size = 17240)
     {
-        return $this->file($file, $size, ['jpg', 'gif', 'gif', 'jpeg']);
+        return $this->file($file, $size, ['jpg', 'png', 'gif', 'jpeg']);
     }
 }

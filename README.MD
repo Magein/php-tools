@@ -57,3 +57,6 @@
  * 使用自定的UnixTime替代内置的 strtotime 用法
  * 优化extra下的Model模型，增加了startTime和endTime字段的获取器和修改器
  * 优化extra下的Logic类下的updateField方法，在更新前，执行了查询的操作，确保数据存在，且使用了对象的方式执行，确保在后续使用修改器的时候可以通过第二个参数拿到查询出来的数据
+ 
+ 2019-06-04
+ * 优化upload上传的方法类,
