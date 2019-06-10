@@ -13,6 +13,31 @@ use think\migration\db\Table;
 class Migrate
 {
 
+    /**
+     *  追加状态
+     */
+    const APPEND_STATUS = 'status';
+
+    /**
+     * 追加排序
+     */
+    const APPEND_SORT = 'sort';
+
+    /**
+     * 追加开始时间
+     */
+    const APPEND_START_TIME = 'start_time';
+
+    /**
+     * 追加结束时间
+     */
+    const APPEND_END_TIME = 'end_time';
+
+    /**
+     * 追加标题
+     */
+    const APPEND_TITLE = 'title';
+
     private static $append = [];
 
     /**
@@ -64,11 +89,23 @@ class Migrate
         if (self::$append && is_array(self::$append)) {
             foreach (self::$append as $item) {
                 switch ($item) {
-                    case 'sort':
-                        $table->addColumn('sort', 'integer', ['limit' => MysqlAdapter::INT_TINY, 'comment' => '排序', 'default' => 99]);
+                    case self::APPEND_TITLE:
+                        $table->addColumn($item, 'integer', ['limit' => MysqlAdapter::INT_TINY, 'comment' => '排序', 'default' => 99]);
                         break;
-                    case 'status':
-                        $table->addColumn('status', 'integer', ['limit' => MysqlAdapter::INT_TINY, 'comment' => '状态 0 禁用 forbid 1 启用 open', 'default' => 1]);
+                    case self::APPEND_START_TIME:
+                        $table->addColumn($item, 'integer', ['comment' => '开始时间', 'default' => 0]);
+                        break;
+                    case self::APPEND_END_TIME:
+                        $table->addColumn($item, 'integer', ['comment' => '结束时间', 'default' => 0]);
+                        break;
+
+                    case self::APPEND_STATUS:
+                        $table->addColumn($item, 'integer', ['limit' => MysqlAdapter::INT_TINY, 'comment' => '状态 0 禁用 forbid 1 启用 open', 'default' => 1]);
+                        break;
+                    case self::APPEND_SORT:
+                        $table->addColumn($item, 'integer', ['limit' => MysqlAdapter::INT_TINY, 'comment' => '排序', 'default' => 99]);
+                        break;
+
                 }
             }
         }

@@ -4,6 +4,7 @@ namespace magein\php_tools\extra;
 
 use magein\php_tools\traits\Error;
 use magein\php_tools\traits\Instance;
+use think\Config;
 use think\File;
 use think\Request;
 
@@ -111,8 +112,13 @@ class Upload
      * @param int $size
      * @return bool
      */
-    public function image($file = null, $size = 17240)
+    public function image($file = null, $size = 1048576)
     {
-        return $this->file($file, $size, ['jpg', 'png', 'gif', 'jpeg']);
+        $ext = Config::get('upload_image_ext');
+        if (empty($ext)) {
+            $ext = ['jpg', 'png', 'gif', 'jpeg'];
+        }
+
+        return $this->file($file, $size, $ext);
     }
 }
