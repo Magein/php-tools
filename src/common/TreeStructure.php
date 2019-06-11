@@ -84,6 +84,11 @@ class TreeStructure
             return false;
         }
 
+        /**
+         * 清除parent信息，防止连续调用产生的污染
+         */
+        $this->parent = [];
+
         $parent_id = $this->parent_id;
         $primary = $this->primary;
 
@@ -115,6 +120,11 @@ class TreeStructure
      */
     public function floor($records, $callback = null, $limit = 3)
     {
+        /**
+         * 清除parent信息，防止连续调用产生的污染
+         */
+        $this->parent = [];
+
         $tree = function ($records, $pid = 0, $level = 1) use (&$tree, $callback, $limit) {
 
             static $result = [];
