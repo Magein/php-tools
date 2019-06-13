@@ -777,6 +777,13 @@ abstract class Logic
             return false;
         }
 
+        foreach ($data as $key => $item) {
+            if (is_string($item)) {
+                $item = trim($item);
+            }
+            $data[$key] = $item;
+        }
+
         $model = $this->model();
 
         /**
