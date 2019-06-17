@@ -2,6 +2,7 @@
 
 namespace magein\php_tools\think;
 
+use magein\php_tools\common\Password;
 use magein\php_tools\common\UnixTime;
 use traits\model\SoftDelete;
 
@@ -94,5 +95,21 @@ class Model extends \think\Model
         }
 
         return $value;
+    }
+
+    /**
+     * @param $value
+     * @param $data
+     * @return string
+     */
+    protected function setPasswordAttr($value, $data)
+    {
+        $value = trim($value);
+
+        if (empty($value)) {
+            $value = '123456';
+        }
+
+        return Password::instance()->encrypt($value);
     }
 }
