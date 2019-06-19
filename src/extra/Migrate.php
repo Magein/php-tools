@@ -52,7 +52,7 @@ class Migrate
      * 直接创建表
      * @param $table
      * @param array $columns
-     * @param array $index
+     * @param array $index 如果是一个字符串,则表示给字符串添加普通索引,如果是数组,则键是字段名称,值是选项
      */
     public static function create($table, $columns = [], $index = [])
     {
@@ -64,7 +64,7 @@ class Migrate
      *
      * 添加普通索引
      *  $index='phone';
-     * 添加唯一所以
+     * 添加唯一索引
      *  $index=[
      *     'phone'=>['unique'=>true]
      *  ];
