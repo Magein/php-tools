@@ -24,9 +24,12 @@ trait Error
 
     /**
      * @param string $error
+     * @return bool
      */
     public function setError($error)
     {
         $this->error = $error;
+
+        return false;
     }
 }

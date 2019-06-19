@@ -108,7 +108,7 @@ class Password
             return '';
         }
 
-        if ($this->legal_verify && preg_match($this->legal_regular, $value)) {
+        if ($this->legal_verify && !preg_match($this->legal_regular, $value)) {
             return '';
         }
 
