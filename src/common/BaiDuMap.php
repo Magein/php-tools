@@ -17,7 +17,7 @@ class BaiDuMap
     /**
      * @var string
      */
-    private $ak = 'qZhnLdXzBqW2ksrpAyabuxcdNXYxMSvs';
+    private $ak = '';
 
     /**
      * @var string
@@ -25,10 +25,19 @@ class BaiDuMap
     private $output = 'json';
 
     /**
+     * @var array
+     */
+    private $result = [];
+
+    /**
      * @return string
      */
     public function getAk(): string
     {
+        if (empty($this->ak)) {
+            $this->ak = $this->getConfig('ak');
+        }
+
         return $this->ak;
     }
 
@@ -45,7 +54,7 @@ class BaiDuMap
      */
     public function getOutput(): string
     {
-        return $this->output;
+        return $this->output ?: 'json';
     }
 
     /**
@@ -57,38 +66,86 @@ class BaiDuMap
     }
 
     /**
-     * 参考文档：http://lbsyun.baidu.com/index.php?title=webapi/guide/webservice-geocoding
-     * @param $address
-     * @return array|bool
+     * @return array
      */
-    public function getLngAndLatByAddress($address)
+    public function getResult()
     {
-        $apiUrl = $this->apiUrl . 'geocoder/v2/';
+        return $this->result;
+    }
 
-        $param = [
-            'address' => $address,
-            'output' => $this->output,
-            'ak' => $this->ak
-        ];
+    /**
+     * @param $key
+     * @return mixed|string
+     */
+    private function getConfig($key)
+    {
+        $value = '';
 
-        $result = Curl::instance()->get($apiUrl, $param);
+        if (class_exists('think\Config')) {
+
+            $key = 'bd_map.' . $key;
+
+            $value = call_user_func_array('think\Config::get', [$key]);
+        };
+
+        return $value;
+    }
+
+    /**
+     * @param $param
+     * @return mixed
+     */
+    private function concatParam($param)
+    {
+        $param['ak'] = $this->getAk();
+        $param['output'] = $this->getOutput();
+
+        return $param;
+    }
+
+    /**
+     * 发送请求
+     * @param $url
+     * @param $param
+     * @return bool
+     */
+    private function request($url, $param)
+    {
+        if (!preg_match('/^http:/', $url)) {
+            $url = $this->apiUrl . $url;
+        }
+
+        $result = Curl::instance()->get($url, $this->concatParam($param));
 
         if (false === $result) {
-            $this->setError(Curl::instance()->getError());
-            return false;
+            return $this->setError(Curl::instance()->getError());
         }
 
         $result = json_decode($result, true);
 
         if (isset($result['status']) && $result['status'] != 0) {
-            $this->setError($result['msg']);
-            return false;
+            return $this->setError($result['message']);
         }
 
-        $location = $result['result']['location'];
+        $this->result = $result;
 
-        return ['lat' => $location['lat'], 'lng' => $location['lng']];
+        return $result;
     }
 
+    /**
+     * 参考文档：http://lbsyun.baidu.com/index.php?title=webapi/guide/webservice-geocoding
+     * @param $address
+     * @return Location|bool
+     */
+    public function getLocationByAddress($address)
+    {
+        $this->request('geocoder/v2/', ['address' => $address]);
 
+        if (isset($this->result['result']['location'])) {
+            $location = $this->result['result']['location'];
+            return new Location($location);
+        }
+
+        return false;
+    }
 }

@@ -37,6 +37,12 @@ class TreeStructure
     private $title = 'title';
 
     /**
+     * 最后一层的值
+     * @var int
+     */
+    private $level = 0;
+
+    /**
      * 用来展示层级关系的前缀
      * @var string
      */
@@ -64,6 +70,24 @@ class TreeStructure
         return $this;
     }
 
+    /**
+     * @param string $title
+     * @return $this
+     */
+    public function setTitle(string $title)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @param string $sign
+     */
+    public function setSign(string $sign)
+    {
+        $this->sign = $sign;
+    }
 
     /**
      * @return array
@@ -71,6 +95,14 @@ class TreeStructure
     public function getParent()
     {
         return $this->parent;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLevel()
+    {
+        return $this->level;
     }
 
     /**
@@ -141,7 +173,7 @@ class TreeStructure
                     $flg = str_repeat($this->sign, $level - 1);
                     $val[$this->title] = $flg . $val[$this->title];
                     $val['level'] = $level;
-
+                    $this->level = $level;
                     if (is_callable($callback)) {
                         $val = call_user_func($callback, $val, $result);
                     }
