@@ -73,7 +73,7 @@ class Curl
 
     /**
      * @param $url
-     * @param array $params
+     * @param array|string $params
      * @return bool|mixed
      */
     public function post($url, $params = [])
