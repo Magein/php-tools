@@ -5,6 +5,7 @@ namespace magein\php_tools\common;
 
 use magein\php_tools\traits\Error;
 use magein\php_tools\traits\Instance;
+use magein\render\admin\RenderForm;
 
 /**
  * 处理时间
@@ -14,6 +15,7 @@ use magein\php_tools\traits\Instance;
 class UnixTime
 {
     use Instance;
+
     use Error;
 
     /**
@@ -48,14 +50,68 @@ class UnixTime
     }
 
     /**
-     * 转化为时间戳，
-     * @param $date
+     * 一天结束时间点
+     * @param string $date
      * @return bool|false|int
      */
-    public function dateEnd($date)
+    public function endDay($date = '')
     {
+        if (empty($date)) {
+            $date = date('Y-m-d', time());
+        }
+
         $datetime = $date . ' 23:59:59';
 
         return $this->unix($datetime);
+    }
+
+    /**
+     * 一天的开始时间点
+     * @param string $date
+     * @return bool|false|int
+     */
+    public function startDay($date = '')
+    {
+        if (empty($date)) {
+            $date = date('Y-m-d', time());
+        }
+
+        $datetime = $date . ' 00:00:00';
+
+        return $this->unix($datetime);
+    }
+
+    /**
+     *
+     * @param string $unix_time
+     * @param string $format
+     * @return false|string
+     */
+    public function dateTime($unix_time = '', $format = 'Y-m-d H:i:s')
+    {
+
+        if (empty($unix_time)) {
+            $unix_time = time();
+        }
+
+        return date($format, $unix_time);
+    }
+
+    /**
+     * @param string $unix_time
+     * @return false|string
+     */
+    public function date($unix_time = '')
+    {
+        return $this->dateTime($unix_time, 'Y-m-d');
+    }
+
+    /**
+     * @param string $unix_time
+     * @return false|string
+     */
+    public function time($unix_time = '')
+    {
+        return $this->dateTime($unix_time, 'H:i:s');
     }
 }
