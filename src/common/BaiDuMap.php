@@ -4,10 +4,13 @@
 namespace magein\php_tools\common;
 
 use magein\php_tools\traits\Error;
+use magein\php_tools\traits\Instance;
 
 class BaiDuMap
 {
     use Error;
+
+    use Instance;
 
     /**
      * @var string
