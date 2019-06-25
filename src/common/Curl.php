@@ -91,7 +91,9 @@ class Curl
      */
     public function get($url, $params = [])
     {
-        $url = $url . '?' . http_build_query($params);
+        if ($params) {
+            $url = $url . '?' . http_build_query($params);
+        }
 
         return $this->init($url);
     }
