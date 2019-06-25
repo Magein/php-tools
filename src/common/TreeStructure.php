@@ -157,6 +157,8 @@ class TreeStructure
          */
         $this->parent = [];
 
+        $this->level = 0;
+
         $tree = function ($records, $pid = 0, $level = 1) use (&$tree, $callback, $limit) {
 
             static $result = [];
@@ -173,7 +175,10 @@ class TreeStructure
                     $flg = str_repeat($this->sign, $level - 1);
                     $val[$this->title] = $flg . $val[$this->title];
                     $val['level'] = $level;
-                    $this->level = $level;
+                    if ($this->level < $val['level']) {
+                        $this->level = $val['level'];
+                    }
+
                     if (is_callable($callback)) {
                         $val = call_user_func($callback, $val, $result);
                     }
