@@ -14,10 +14,15 @@ class QueryResult
      */
     private $page = [];
 
+    /**
+     * QueryResult constructor.
+     * @param array $list
+     * @param array $page
+     */
     public function __construct($list = [], $page = [])
     {
-        $this->setList($list);
-        $this->setPage($page);
+        $this->setList($list ?: []);
+        $this->setPage($page ?: []);
     }
 
     /**
