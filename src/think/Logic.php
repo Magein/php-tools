@@ -866,9 +866,6 @@ abstract class Logic
      * @param null $value
      * @param null $pkValue
      * @return bool|false|int
-     * @throws DbException
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateField($field, $value = null, $pkValue = null)
     {
@@ -912,7 +909,12 @@ abstract class Logic
             $condition[$this->primaryKey] = $pkValue;
         }
 
-        $record = $model->where($condition)->find();
+        try {
+            $record = $model->where($condition)->find();
+        } catch (DbException $exception) {
+            $this->lastSql = $model->getLastSql();
+            return $this->setError($exception->getMessage());
+        }
 
         if (empty($record)) {
             $this->setError(self::ERROR_RECORD_IS_NULL);
@@ -920,6 +922,7 @@ abstract class Logic
         }
 
         $record->$field = $value;
+
 
         $result = $record->save();
 
