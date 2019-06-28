@@ -145,6 +145,18 @@ abstract class Logic
     protected $pageRender = '';
 
     /**
+     * 一个业务逻辑内执行的Sql语句
+     * @var array
+     */
+    protected $sql = [];
+
+    /**
+     * 最后一条Sql语句
+     * @var string
+     */
+    protected $lastSql = '';
+
+    /**
      * @var array
      */
     protected $list = [];
@@ -386,6 +398,22 @@ abstract class Logic
     public function getAllowTime()
     {
         return $this->allowTime;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSql()
+    {
+        return $this->sql;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastSql()
+    {
+        return $this->lastSql;
     }
 
     /**
@@ -656,6 +684,9 @@ abstract class Logic
      */
     protected function toArray($record)
     {
+        $this->sql[] = $this->model()->getLastSql();
+        $this->lastSql = $this->model()->getLastSql();
+
         if (false === $this->transArray) {
             return $record;
         }
@@ -831,10 +862,13 @@ abstract class Logic
 
     /**
      * 更新单个字段的值,可以通过设置condition的值更新,也可以通过主键的值更新
-     * @param string $field
+     * @param $field
      * @param null $value
      * @param null $pkValue
      * @return bool|false|int
+     * @throws DbException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateField($field, $value = null, $pkValue = null)
     {
