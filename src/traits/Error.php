@@ -19,14 +19,14 @@ trait Error
 
         }
 
-        return $this->error ?: '发生错误，请重试';
+        return $this->error ?: '';
     }
 
     /**
      * @param string $error
      * @return bool
      */
-    public function setError($error)
+    public function setError($error = '出错啦~~')
     {
         $this->error = $error;
 
