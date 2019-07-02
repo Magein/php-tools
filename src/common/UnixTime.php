@@ -82,6 +82,15 @@ class UnixTime
     }
 
     /**
+     * 今天的时间时间戳
+     * @return array
+     */
+    public function today()
+    {
+        return [$this->startDay(), $this->endDay()];
+    }
+
+    /**
      *
      * @param string $unix_time
      * @param string $format
