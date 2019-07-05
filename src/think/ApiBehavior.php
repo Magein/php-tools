@@ -1,6 +1,6 @@
 <?php
 
-namespace magein\php_tools\think;
+namespace app\common;
 
 use magein\php_tools\traits\Instance;
 use think\Exception;
@@ -89,6 +89,7 @@ class ApiBehavior
         }
 
         $ticket = $request->header($sign);
+
 
         if (empty($ticket)) {
             throw new HttpException(1001, '无效的请求信息');

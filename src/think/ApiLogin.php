@@ -1,6 +1,6 @@
 <?php
 
-namespace magein\php_tools\think;
+namespace app\common;
 
 
 use magein\php_tools\common\RandString;
@@ -9,11 +9,6 @@ use think\exception\HttpException;
 use think\Session;
 use magein\php_tools\traits\Instance;
 
-/**
- * api登录
- * Class ApiLogin
- * @package magein\php_tools\think
- */
 class ApiLogin
 {
     use Instance;
@@ -38,12 +33,9 @@ class ApiLogin
      * @param int $expire_time
      * @return null
      */
-    public function set(&$data = null, $expire_time = 172800)
+    public function set($data = null, $expire_time = 172800)
     {
-        if (empty($data)) {
-            Session::set(self::USER_AUTH, null);
-            return true;
-        }
+
 
         if (isset($data['ticket']) && $data['ticket']) {
             $ticket = $data['ticket'];
@@ -54,14 +46,19 @@ class ApiLogin
             } else {
                 $ticket = RandString::instance()->make(16) . md5('Y-m-d h:i:s');
             }
-        }
 
-        $ticket = sha1(md5($ticket));
+            $ticket = sha1(md5($ticket));
+        }
 
         try {
             Session::init(['id' => $ticket]);
         } catch (Exception $exception) {
             throw new HttpException(1000, '服务器内部出错误');
+        }
+
+        if (empty($data)) {
+            Session::set(self::USER_AUTH, null);
+            return true;
         }
 
         // 用户登录数据
