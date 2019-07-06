@@ -35,8 +35,6 @@ class ApiLogin
      */
     public function set($data = null, $expire_time = 172800)
     {
-
-
         if (isset($data['ticket']) && $data['ticket']) {
             $ticket = $data['ticket'];
         } else {
@@ -51,7 +49,9 @@ class ApiLogin
         }
 
         try {
-            Session::init(['id' => $ticket]);
+            if (empty(session_id())) {
+                Session::init(['id' => $ticket]);
+            }
         } catch (Exception $exception) {
             throw new HttpException(1000, '服务器内部出错误');
         }

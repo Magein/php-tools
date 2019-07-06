@@ -81,6 +81,7 @@ class ApiBehavior
      * 验证票据
      * @param Request|null $request
      * @param string $sign
+     * @return string
      */
     public function ticket(Request $request = null, $sign = 'ticket')
     {
@@ -89,7 +90,6 @@ class ApiBehavior
         }
 
         $ticket = $request->header($sign);
-
 
         if (empty($ticket)) {
             throw new HttpException(1001, '无效的请求信息');
@@ -104,6 +104,8 @@ class ApiBehavior
         if ($ticket !== Session::get('session_ticket')) {
             throw new HttpException(1002, '无效的请求信息');
         }
+
+        return $ticket;
     }
 
     /**
