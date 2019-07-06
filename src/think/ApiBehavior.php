@@ -1,6 +1,6 @@
 <?php
 
-namespace app\common;
+namespace magein\php_tools\think;
 
 use magein\php_tools\traits\Instance;
 use think\Exception;
