@@ -2,6 +2,7 @@
 
 namespace magein\php_tools\think;
 
+use app\common\ApiSession;
 use magein\php_tools\traits\Instance;
 use think\Exception;
 use think\exception\HttpException;
@@ -95,11 +96,7 @@ class ApiBehavior
             throw new HttpException(1001, '无效的请求信息');
         }
 
-        try {
-            Session::init(['id' => $ticket]);
-        } catch (Exception $exception) {
-            throw new HttpException(1000, '服务器内部出错误');
-        }
+        ApiSession::init($ticket);
 
         if ($ticket !== Session::get('session_ticket')) {
             throw new HttpException(1002, '无效的请求信息');

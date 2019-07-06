@@ -3,16 +3,12 @@
 namespace magein\php_tools\think;
 
 
+use app\common\ApiSession;
 use magein\php_tools\common\RandString;
-use think\Exception;
-use think\exception\HttpException;
 use think\Session;
-use magein\php_tools\traits\Instance;
 
 class ApiLogin
 {
-    use Instance;
-
     /**
      * 登录数据
      */
@@ -48,13 +44,7 @@ class ApiLogin
             $ticket = sha1(md5($ticket));
         }
 
-        try {
-            if (empty(session_id())) {
-                Session::init(['id' => $ticket]);
-            }
-        } catch (Exception $exception) {
-            throw new HttpException(1000, '服务器内部出错误');
-        }
+        $ticket = ApiSession::init($ticket);
 
         if (empty($data)) {
             Session::set(self::USER_AUTH, null);
