@@ -49,10 +49,10 @@ class ApiBehavior
 
         if ($request) {
             $controller = $request->controller();
-            $action = $request->action(true);
+            $action = $request->action();
         } else {
             $controller = Request::instance()->controller();
-            $action = Request::instance()->action(true);
+            $action = Request::instance()->action();
         }
 
         $check = function ($controller, $action = '*') use ($config) {
@@ -121,6 +121,10 @@ class ApiBehavior
         }
 
         $this->ticket($request);
+
+        if ($login === null) {
+            $login = new ApiLogin();
+        }
 
         $id = $login->id();
 
