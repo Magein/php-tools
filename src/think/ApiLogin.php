@@ -2,8 +2,6 @@
 
 namespace magein\php_tools\think;
 
-
-use app\common\ApiSession;
 use magein\php_tools\common\RandString;
 use think\Session;
 
@@ -57,7 +55,7 @@ class ApiLogin
 
         if ($data) {
             // 用户登录标识
-            Session::set(self::USER_AUTH_SIGN, $data ? dataAuthSign($data) : null);
+            Session::set(self::USER_AUTH_SIGN, $data ? $this->dataAuthSign($data) : null);
             // 用户登录有效时间
             Session::set(self::USER_LOGIN_EXPIRE_TIME, time() + $expire_time);
         }
@@ -76,7 +74,7 @@ class ApiLogin
         $user_auth = Session::get(self::USER_AUTH);
         $user_auth_sign = Session::get(self::USER_AUTH_SIGN);
 
-        if (empty($user_auth) || empty($user_auth_sign) || dataAuthSign($user_auth) !== $user_auth_sign) {
+        if (empty($user_auth) || empty($user_auth_sign) || $this->dataAuthSign($user_auth) !== $user_auth_sign) {
             return false;
         }
 
@@ -102,5 +100,21 @@ class ApiLogin
     public function id()
     {
         return $this->get('id');
+    }
+
+    private function dataAuthSign($data)
+    {
+        // 数据类型检测
+        if (!is_array($data)) {
+            $data = (array)$data;
+        }
+
+        // 排序
+        ksort($data);
+        // url编码并生成query字符串
+        $code = http_build_query($data);
+        // 生成签名
+        $sign = sha1($code);
+        return $sign;
     }
 }

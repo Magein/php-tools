@@ -2,9 +2,7 @@
 
 namespace magein\php_tools\think;
 
-use app\common\ApiSession;
 use magein\php_tools\traits\Instance;
-use think\Exception;
 use think\exception\HttpException;
 use think\Request;
 use think\Session;
