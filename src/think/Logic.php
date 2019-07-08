@@ -135,6 +135,12 @@ abstract class Logic
     ];
 
     /**
+     * https://www.kancloud.cn/manual/thinkphp5/165789
+     * @var array
+     */
+    protected $time = [];
+
+    /**
      * @var array
      */
     protected $pageParams = [];
@@ -661,6 +667,10 @@ abstract class Logic
             $db->group($this->group);
         }
 
+        if ($this->time) {
+            $db->whereTime($this->time[0], $this->time[1]);
+        }
+
         return $db;
     }
 
@@ -741,8 +751,11 @@ abstract class Logic
             return $model->toArray();
         };
 
-        // 清除条件语句，防止连续调用产生的条件污染
+        /**
+         * 清除条件语句、清除时间筛选 防止连续调用产生的条件污染
+         */
         $this->setCondition([]);
+        $this->time = [];
 
         if ($record instanceof Model) {
             return $toArray($record);
@@ -1035,37 +1048,17 @@ abstract class Logic
         return $result;
     }
 
+
     /**
      * @param string $time
      * @param string $timeField
-     * @return bool|mixed
+     * @return $this|bool
      */
-    protected function whereTime($time = 'today', $timeField = 'create_time')
+    protected function setTime($time = 'today', $timeField = 'create_time')
     {
-        if (!isset($this->allowTime[$time])) {
-            return false;
-        }
+        $this->time = [$timeField, $time];
 
-        $model = $this->db();
-
-        $model->whereTime($timeField, $time);
-
-        try {
-            $records = $model->select();
-        } catch (DbException $exception) {
-            $this->setError($exception->getMessage());
-            return false;
-        }
-
-        if (isset($records)) {
-            foreach ($records as $key => $record) {
-                $records[$key] = $this->toArray($record);
-            }
-        } else {
-            $records = [];
-        }
-
-        return $records;
+        return $this;
     }
 
 }
