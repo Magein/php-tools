@@ -116,6 +116,7 @@ abstract class Logic
     protected $transArray = true;
 
     /**
+     * 如果不使用自动转化，请在子类中设置为null
      * @var string
      */
     protected $returnArrayKey = 'id';
@@ -328,12 +329,13 @@ abstract class Logic
     }
 
     /**
+     * 传递空值的时候表示不使用自动转化
      * @param $key
      * @return $this
      */
-    public function setReturnArrayKey($key)
+    public function setReturnArrayKey($key = null)
     {
-        $this->returnArrayKey = $key ? $key : 'id';
+        $this->returnArrayKey = $key;
 
         return $this;
     }
@@ -751,11 +753,7 @@ abstract class Logic
             return $model->toArray();
         };
 
-        /**
-         * 清除条件语句、清除时间筛选 防止连续调用产生的条件污染
-         */
-        $this->setCondition([]);
-        $this->time = [];
+        $this->reset();
 
         if ($record instanceof Model) {
             return $toArray($record);
@@ -776,6 +774,28 @@ abstract class Logic
         }
 
         return $data;
+    }
+
+    /**
+     * 当查询完成后，清除前置设置，防止污染后续查询
+     */
+    private function reset()
+    {
+        /**
+         * 清除条件语句、清除时间筛选 防止连续调用产生的条件污染
+         */
+        $this->setCondition([]);
+        $this->setFields([]);
+        $this->setOrder([]);
+        $this->setHasOne([]);
+        $this->setHasMany([]);
+        $this->setGroup([]);
+        $this->setAppendAttr([]);
+        $this->setWith([]);
+        $this->time = [];
+        if ($this->returnArrayKey != null) {
+            $this->setReturnArrayKey('id');
+        }
     }
 
     /**
