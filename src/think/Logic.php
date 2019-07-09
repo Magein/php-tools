@@ -9,6 +9,7 @@ use think\exception\DbException;
 use think\Model;
 use think\Paginator;
 use think\paginator\driver\Bootstrap;
+use think\Request;
 use think\Validate;
 
 /**
@@ -150,6 +151,12 @@ abstract class Logic
      * @var string
      */
     protected $pageRender = '';
+
+    /**
+     * 每页数量
+     * @var int
+     */
+    protected $limit = 15;
 
     /**
      * 一个业务逻辑内执行的Sql语句
@@ -365,6 +372,21 @@ abstract class Logic
     }
 
     /**
+     * @param bool $auto
+     * @return int|mixed
+     */
+    public function getLimit($auto = true)
+    {
+        $aut = (bool)$auto;
+
+        if ($auto && Request::instance()->param('page_size')) {
+            $this->limit = Request::instance()->param('page_size');
+        }
+
+        return (int)$this->limit ?: 15;
+    }
+
+    /**
      * 获取验证类
      * @return null|Validate
      */
@@ -553,12 +575,19 @@ abstract class Logic
     }
 
     /**
+     * limit取值规则：
+     *  0 表示自动获取 优先使用连接中，否则使用默认值（15）
+     *  非零值 表示使用指定的值
      * @param int $limit
      * @return array|bool
      */
-    public function paginate($limit = 15)
+    public function paginate($limit = 0)
     {
         $db = $this->db();
+
+        if (empty($limit) || $limit < 0) {
+            $limit = $this->getLimit();
+        }
 
         try {
             /**
@@ -618,7 +647,7 @@ abstract class Logic
      * @param bool $resetKey
      * @return array
      */
-    public function getResult($limit = 15, $resetKey = true)
+    public function getResult($limit = 0, $resetKey = true)
     {
         if (empty($this->list)) {
             $this->paginate($limit);
