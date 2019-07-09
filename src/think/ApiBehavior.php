@@ -3,9 +3,9 @@
 namespace magein\php_tools\think;
 
 use magein\php_tools\traits\Instance;
+use think\Config;
 use think\exception\HttpException;
 use think\Request;
-use think\Session;
 
 /**
  * 接口行为验证
@@ -23,7 +23,88 @@ class ApiBehavior
      */
     public function run(&$request)
     {
-        return ApiBehavior::instance()->login($request);
+        // 验证来源
+        $this->request($request);
+
+        $this->authorization($request);
+    }
+
+    /**
+     * 请求接口验证
+     * @param Request|null $request
+     * @param string $request_id
+     * @return string
+     */
+    public function request(Request $request = null, $key = '', $request_id = 'X-Request-ID')
+    {
+        if (empty($request)) {
+            $request = Request::instance();
+        }
+
+        $request_id = $request->header($request_id);
+
+        $decrypt = function ($request_id, $key) {
+
+            if (!is_array($request_id)) {
+                $request_id = json_decode($request_id, true);
+            }
+
+            if (empty($request_id)) {
+                return false;
+            }
+
+            /**
+             * 检测request_id字段信息
+             * @param $request_id
+             * @return bool
+             */
+            $check_field = function ($request_id) {
+                $field = [
+                    'nostr',
+                    'timestamp',
+                    'sign',
+                ];
+                foreach ($field as $item) {
+                    if (!isset($request_id[$item]) || empty($request_id[$item])) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            if (!$check_field($request_id)) {
+                return false;
+            }
+
+            $sign = $request_id['sign'];
+            $nostr = $request_id['nostr'];
+            $timestamp = $request_id['timestamp'];
+
+            /**
+             * 如果请求时间间隔大于60秒，则请求失效
+             *
+             * 请注意：前段传递的时间戳带毫秒所以除以1000即可
+             */
+            $expire_time = Config::get('X-Request-ID.expire_time') ?: 60;
+            if (time() - floor($timestamp / 1000) > $expire_time) {
+                return false;
+            }
+
+            if ($sign == md5($key . $nostr . $timestamp)) {
+                return true;
+            }
+            return false;
+        };
+
+        if (empty($key)) {
+            $key = Config::get('X-Request-ID.key') ?: 'request_ticket_key';
+        }
+
+        if (!$decrypt($request_id, $key)) {
+            throw new HttpException(1001, '无效的请求信息');
+        }
+
+        return true;
     }
 
     /**
@@ -35,7 +116,7 @@ class ApiBehavior
     public function check(Request $request = null, $config = '')
     {
         if (empty($config)) {
-            $config = 'api_request_skip_login_check';
+            $config = 'authorize.skip';
         }
 
         if (is_string($config)) {
@@ -77,55 +158,36 @@ class ApiBehavior
     }
 
     /**
-     * 验证票据
-     * @param Request|null $request
-     * @param string $sign
-     * @return string
-     */
-    public function ticket(Request $request = null, $sign = 'ticket')
-    {
-        if (empty($request)) {
-            $request = Request::instance();
-        }
-
-        $ticket = $request->header($sign);
-
-        if (empty($ticket)) {
-            throw new HttpException(1001, '无效的请求信息');
-        }
-
-        ApiSession::init($ticket);
-
-        if ($ticket !== Session::get('session_ticket')) {
-            throw new HttpException(1002, '无效的请求信息');
-        }
-
-        return $ticket;
-    }
-
-    /**
-     * 用户登录
+     * 验证用户登录
      * @param Request $request
      * @param ApiLogin|null $login
      * @return bool
      */
-    public function login(Request $request, ApiLogin $login = null)
+    public function authorization(Request $request, ApiLogin $login = null)
     {
         if ($this->check($request)) {
             return true;
         }
 
-        $this->ticket($request);
-
+        $class = new ApiLogin();
         if ($login === null) {
-            $login = new ApiLogin();
+            $namespace = 'app\\' . $request->module() . '\logic\LoginLogic';
+            if (class_exists($namespace)) {
+                $class = new $namespace();
+            }
         }
 
-        $id = $login->id();
+        $record = [];
+        if ($class && $class instanceof ApiLogin) {
+            $record = $class->verifyToken();
+        }
 
-        if (empty($id)) {
+        if (empty($record)) {
             throw new HttpException(1010, '请先登录');
         }
+
+        // 登录用户的ID
+        defined('LOGIN_USER_ID') or define('LOGIN_USER_ID', isset($record['user_id']) ? $record['user_id'] : '');
 
         return true;
     }

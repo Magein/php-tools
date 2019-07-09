@@ -377,7 +377,7 @@ abstract class Logic
      */
     public function getLimit($auto = true)
     {
-        $aut = (bool)$auto;
+        $auto = (bool)$auto;
 
         if ($auto && Request::instance()->param('page_size')) {
             $this->limit = Request::instance()->param('page_size');

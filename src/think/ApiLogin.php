@@ -2,119 +2,177 @@
 
 namespace magein\php_tools\think;
 
-use magein\php_tools\common\RandString;
-use think\Session;
+use think\Request;
 
+/**
+ * Class ApiLogin
+ * @package magein\php_tools\think
+ */
 class ApiLogin
 {
     /**
-     * 登录数据
+     * 头部
+     * @var array
      */
-    const USER_AUTH = 'user_auth_data';
+    protected $header = array(
+        'alg' => 'HS256', //生成signature的算法
+        'typ' => 'JWT'  //类型
+    );
 
     /**
-     * 加密的登录数据
+     * 使用HMAC生成信息摘要时所使用的密钥
+     * @var string
      */
-    const USER_AUTH_SIGN = 'user_auth_sign';
+    protected $key = 'Np9SPsaWGMCw';
 
     /**
-     * 用户登录的有效期
+     * @return array
      */
-    const USER_LOGIN_EXPIRE_TIME = 'user_login_expire_time';
-
-    /**
-     * @param null $data
-     * @param int $expire_time
-     * @return null
-     */
-    public function set($data = null, $expire_time = 172800)
+    protected function getHeader()
     {
-        if (isset($data['ticket']) && $data['ticket']) {
-            $ticket = $data['ticket'];
+        return $this->header;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * 公共的荷载参数
+     * [
+     * 'iss'=>'jwt_admin', //该JWT的签发者
+     * 'iat'=>time(), //签发时间
+     * 'exp'=>time()+7200, //过期时间
+     * 'nbf'=>time()+60, //该时间之前不接收处理该Token
+     * 'sub'=>'www.admin.com', //面向的用户
+     * 'jti'=>md5(uniqid('JWT').time()) //该Token唯一标识
+     * ]
+     * @return bool|string
+     */
+    protected function getPayload()
+    {
+        return [];
+    }
+
+    /**
+     * 获取jwt token
+     * @return bool|string
+     */
+    public function getToken($data)
+    {
+        $payload = array_merge($this->getPayload(), $data);
+
+        if (is_array($payload)) {
+            $base64_header = $this->base64UrlEncode(json_encode($this->getHeader(), JSON_UNESCAPED_UNICODE));
+            $base64_payload = $this->base64UrlEncode(json_encode($payload, JSON_UNESCAPED_UNICODE));
+            $token = $base64_header . '.' . $base64_payload . '.' . $this->signature($base64_header . '.' . $base64_payload, $this->getKey(), $this->getHeader()['alg']);
+            return $token;
         } else {
-            // 生成ticket
-            if (isset($data['id']) && $data['id']) {
-                $ticket = $data['id'] . RandString::instance()->make(48);
-            } else {
-                $ticket = RandString::instance()->make(16) . md5('Y-m-d h:i:s');
-            }
-
-            $ticket = sha1(md5($ticket));
+            return false;
         }
-
-        $ticket = ApiSession::init($ticket);
-
-        if (empty($data)) {
-            Session::set(self::USER_AUTH, null);
-            return true;
-        }
-
-        // 用户登录数据
-        Session::set(self::USER_AUTH, $data);
-        Session::set('session_ticket', $ticket);
-
-        if ($data) {
-            // 用户登录标识
-            Session::set(self::USER_AUTH_SIGN, $data ? $this->dataAuthSign($data) : null);
-            // 用户登录有效时间
-            Session::set(self::USER_LOGIN_EXPIRE_TIME, time() + $expire_time);
-        }
-
-        $data['ticket'] = $ticket;
-
-        return $data;
     }
 
     /**
-     * @param null $key
-     * @return bool|mixed|string
+     * 验证token是否有效,默认验证exp,nbf,iat时间
+     * @param string $token 需要验证的token
+     * @return bool|string
      */
-    public function get($key = null)
+    public function verifyToken(string $token = '')
     {
-        $user_auth = Session::get(self::USER_AUTH);
-        $user_auth_sign = Session::get(self::USER_AUTH_SIGN);
+        if (empty($token)) {
+            $token = Request::instance()->header('Authorization');
+        }
 
-        if (empty($user_auth) || empty($user_auth_sign) || $this->dataAuthSign($user_auth) !== $user_auth_sign) {
+        $tokens = explode('.', $token);
+
+        if (count($tokens) != 3) {
             return false;
         }
 
-        $expire_time = Session::get(self::USER_LOGIN_EXPIRE_TIME);
+        list($base64_header, $base64_payload, $sign) = $tokens;
 
-        // 登录时间已经过期
-        if ($expire_time < time()) {
-            $this->set();
+        //获取jwt算法
+        $base64_decode_header = json_decode($this->base64UrlDecode($base64_header), JSON_OBJECT_AS_ARRAY);
+        if (empty($base64_decode_header['alg'])) {
             return false;
         }
 
-        if ($key) {
-            return isset($user_auth[$key]) ? $user_auth[$key] : '';
+        //签名验证
+        if ($this->signature($base64_header . '.' . $base64_payload, $this->getKey(), $base64_decode_header['alg']) !== $sign) {
+            return false;
         }
 
-        return $user_auth;
+        $payload = json_decode($this->base64UrlDecode($base64_payload), JSON_OBJECT_AS_ARRAY);
+
+        //签发时间大于当前服务器时间验证失败
+        if (isset($payload['iat']) && $payload['iat'] > time()) {
+            return false;
+        }
+
+        //过期时间小宇当前服务器时间验证失败
+        if (isset($payload['exp']) && $payload['exp'] < time()) {
+            return false;
+        }
+
+        //该nbf时间之前不接收处理该Token
+        if (isset($payload['nbf']) && $payload['nbf'] > time()) {
+            return false;
+        }
+
+        return $payload;
+    }
+
+
+    /**
+     * base64UrlEncode  https://jwt.io/ 中base64UrlEncode编码实现
+     * @param string $input 需要编码的字符串
+     * @return string
+     */
+    private function base64UrlEncode(string $input)
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
     /**
-     * 获取登录用户的id
-     * @return bool|mixed|string
+     * base64UrlEncode https://jwt.io/ 中base64UrlEncode解码实现
+     * @param string $input 需要解码的字符串
+     * @return bool|string
      */
-    public function id()
+    private function base64UrlDecode(string $input)
     {
-        return $this->get('id');
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $add_length = 4 - $remainder;
+            $input .= str_repeat('=', $add_length);
+        }
+        return base64_decode(strtr($input, '-_', '+/'));
     }
 
-    private function dataAuthSign($data)
+    /**
+     * HMACSHA256签名  https://jwt.io/ 中HMACSHA256签名实现
+     * @param string $input 为base64UrlEncode(header).".".base64UrlEncode(payload)
+     * @param string $key
+     * @param string $alg 算法方式
+     * @return mixed
+     */
+    private function signature(string $input, string $key, string $alg = 'HS256')
     {
-        // 数据类型检测
-        if (!is_array($data)) {
-            $data = (array)$data;
-        }
+        $alg_config = array(
+            'HS256' => 'sha256'
+        );
+        return $this->base64UrlEncode(hash_hmac($alg_config[$alg], $input, $key, true));
+    }
 
-        // 排序
-        ksort($data);
-        // url编码并生成query字符串
-        $code = http_build_query($data);
-        // 生成签名
-        $sign = sha1($code);
-        return $sign;
+    /**
+     * 登录用户的ID
+     * @return string
+     */
+    public static function id()
+    {
+        return defined('LOGIN_USER_ID') ? LOGIN_USER_ID : '';
     }
 }
