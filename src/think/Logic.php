@@ -1105,11 +1105,10 @@ abstract class Logic
      * @param string $timeField
      * @return $this|bool
      */
-    protected function setTime($time = 'today', $timeField = 'create_time')
+    public function setTime($time = 'today', $timeField = 'create_time')
     {
         $this->time = [$timeField, $time];
 
         return $this;
     }
-
 }
