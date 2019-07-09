@@ -752,6 +752,7 @@ abstract class Logic
              * 处理一对模型
              */
             if ($this->hasOne) {
+
                 foreach ($this->hasOne as $many) {
                     $many_data = $model[$many];
                     unset($model[$many]);
@@ -782,8 +783,6 @@ abstract class Logic
             return $model->toArray();
         };
 
-        $this->reset();
-
         if ($record instanceof Model) {
             return $toArray($record);
         }
@@ -801,6 +800,9 @@ abstract class Logic
                 }
             }
         }
+
+        // 清除查询设置的值，防止后续查询污染
+        $this->reset();
 
         return $data;
     }
