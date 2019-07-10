@@ -25,6 +25,8 @@ class ApiBehavior
     {
         // 验证来源
         $this->request($request);
+        // 验证session
+        $this->session();
 
         $this->authorization($request);
     }
@@ -129,10 +131,10 @@ class ApiBehavior
 
         if ($request) {
             $controller = $request->controller();
-            $action = $request->action();
+            $action = $request->action(true);
         } else {
             $controller = Request::instance()->controller();
-            $action = Request::instance()->action();
+            $action = Request::instance()->action(true);
         }
 
         $check = function ($controller, $action = '*') use ($config) {
@@ -190,5 +192,17 @@ class ApiBehavior
         defined('LOGIN_USER_ID') or define('LOGIN_USER_ID', isset($record['user_id']) ? $record['user_id'] : '');
 
         return true;
+    }
+
+    /**
+     * @param Request $request
+     * @return array|bool
+     */
+    public function session(Request $request)
+    {
+        if (ApiSession::instance()->check()) {
+            return true;
+        }
+        throw new HttpException(1011, 'x-request-session-ticket错误');
     }
 }

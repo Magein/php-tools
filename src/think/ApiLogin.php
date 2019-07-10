@@ -2,7 +2,11 @@
 
 namespace magein\php_tools\think;
 
+use magein\php_tools\common\RandString;
+use magein\php_tools\traits\Instance;
+use think\Config;
 use think\Request;
+use think\Session;
 
 /**
  * Class ApiLogin
@@ -64,6 +68,9 @@ class ApiLogin
      */
     public function getToken($data)
     {
+        if (!is_array($data)) {
+            $data = ['user_id' => $data];
+        }
         $payload = array_merge($this->getPayload(), $data);
 
         if (is_array($payload)) {
