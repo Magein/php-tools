@@ -2,12 +2,8 @@
 
 namespace magein\php_tools\think;
 
-use magein\php_tools\common\RandString;
 use magein\php_tools\traits\Instance;
-use think\Exception;
-use think\exception\HttpException;
 use think\Request;
-use think\Session;
 
 /**
  * 接口行为验证
@@ -32,7 +28,7 @@ class ApiSession
     }
 
     /**
-     * @param $param
+     * @param $id
      * @return string
      */
     public static function id($id = '')
@@ -70,13 +66,17 @@ class ApiSession
     }
 
     /**
-     * @param null $session_ticket
+     * @param null $request
      * @return bool|array
      */
-    public function check($session_ticket = null)
+    public function check($request = null)
     {
-        $session_ticket = $session_ticket ?: Request::instance()->header('X-Request-Session-Ticket');
-
+        if ($request instanceof Request) {
+            $session_ticket = $request->header('X-Request-Session-Ticket');
+        } else {
+            $session_ticket = $request;
+        }
+        
         if (empty($session_ticket)) {
             return false;
         }

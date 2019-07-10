@@ -2,7 +2,6 @@
 
 namespace magein\php_tools\think;
 
-use magein\php_tools\common\RandString;
 use magein\php_tools\traits\Instance;
 use think\Config;
 use think\Request;

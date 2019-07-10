@@ -26,14 +26,17 @@ class ApiBehavior
         // 验证来源
         $this->request($request);
         // 验证session
-        $this->session();
+        $this->session($request);
 
         $this->authorization($request);
+
+        return true;
     }
 
     /**
      * 请求接口验证
      * @param Request|null $request
+     * @param string $key
      * @param string $request_id
      * @return string
      */
@@ -200,7 +203,7 @@ class ApiBehavior
      */
     public function session(Request $request)
     {
-        if (ApiSession::instance()->check()) {
+        if (ApiSession::instance()->check($request)) {
             return true;
         }
         throw new HttpException(1011, 'x-request-session-ticket错误');
