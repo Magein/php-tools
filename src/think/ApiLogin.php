@@ -51,7 +51,7 @@ class ApiLogin
      * 'sub'=>'www.admin.com', //面向的用户
      * 'jti'=>md5(uniqid('JWT').time()) //该Token唯一标识
      * ]
-     * @return bool|string
+     * @return array
      */
     protected function getPayload()
     {
@@ -59,14 +59,37 @@ class ApiLogin
     }
 
     /**
+     * @param $data
+     * @param string $sign
+     * @return array|bool
+     */
+    public function login($data, $sign = 'id')
+    {
+        $param = [];
+        if (isset($data[$sign])) {
+            $param['user_id'] = $data[$sign];
+        }
+
+        if (empty($param)) {
+            return false;
+        }
+
+        $token = $this->getToken($param);
+
+        if (empty($token)) {
+            return false;
+        }
+
+        return ['token' => $token, 'user_info' => $data];
+    }
+
+    /**
      * 获取jwt token
+     * @param array $data
      * @return bool|string
      */
     public function getToken($data)
     {
-        if (!is_array($data)) {
-            $data = ['user_id' => $data];
-        }
         $payload = array_merge($this->getPayload(), $data);
 
         if (is_array($payload)) {
