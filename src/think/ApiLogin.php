@@ -2,10 +2,7 @@
 
 namespace magein\php_tools\think;
 
-use magein\php_tools\traits\Instance;
-use think\Config;
 use think\Request;
-use think\Session;
 
 /**
  * Class ApiLogin
