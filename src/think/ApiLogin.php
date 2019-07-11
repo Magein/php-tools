@@ -95,7 +95,9 @@ class ApiLogin
      */
     public function getToken($data)
     {
-        $payload = array_merge($this->getPayload(), $data);
+        if (is_array($data)) {
+            $payload = array_merge($this->getPayload(), $data);
+        }
 
         if (is_array($payload)) {
             $base64_header = $this->base64UrlEncode(json_encode($this->getHeader(), JSON_UNESCAPED_UNICODE));
