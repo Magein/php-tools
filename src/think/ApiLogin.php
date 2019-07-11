@@ -66,8 +66,13 @@ class ApiLogin
     public function login($data, $sign = 'id')
     {
         $param = [];
-        if (isset($data[$sign])) {
-            $param['user_id'] = $data[$sign];
+
+        if (!is_array($data)) {
+            $param['user_id'] = $data;
+        } else {
+            if (isset($data[$sign])) {
+                $param['user_id'] = $data[$sign];
+            }
         }
 
         if (empty($param)) {
