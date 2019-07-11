@@ -60,7 +60,7 @@ class ApiSession
 
         $sign = $this->sign($data);
 
-        $data = $data = preg_replace('/\./', '', $this->base64Encode($data));
+        $data = $data = preg_replace('/\./', '', $this->base64Encode(http_build_query($data)));
 
         return $data . '.' . $sign;
     }
@@ -71,12 +71,14 @@ class ApiSession
      */
     public function check($request = null)
     {
-        if ($request instanceof Request) {
+        if ($request && $request instanceof Request) {
             $session_ticket = $request->header('X-Request-Session-Ticket');
-        } else {
+        } elseif ($request) {
             $session_ticket = $request;
+        } else {
+            $session_ticket = Request::instance()->header('X-Request-Session-Ticket');
         }
-        
+
         if (empty($session_ticket)) {
             return false;
         }
@@ -131,7 +133,7 @@ class ApiSession
      * @param $param
      * @return string
      */
-    private function sign(&$param)
+    private function sign($param)
     {
         if (empty($param)) {
             return false;
