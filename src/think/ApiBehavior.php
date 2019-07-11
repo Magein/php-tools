@@ -106,7 +106,7 @@ class ApiBehavior
         }
 
         if (!$decrypt($request_id, $key)) {
-            throw new HttpException(1001, '无效的请求信息');
+            throw new HttpException(1001, 'x-request-id错误');
         }
 
         return true;
@@ -206,6 +206,6 @@ class ApiBehavior
         if (ApiSession::instance()->check($request)) {
             return true;
         }
-        throw new HttpException(1011, 'x-request-session-ticket错误');
+        throw new HttpException(1002, 'x-request-session-ticket错误');
     }
 }
