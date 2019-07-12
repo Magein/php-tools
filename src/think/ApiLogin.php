@@ -97,6 +97,8 @@ class ApiLogin
     {
         if (is_array($data)) {
             $payload = array_merge($this->getPayload(), $data);
+        } else {
+            $payload = $this->getPayload();
         }
 
         if (is_array($payload)) {
