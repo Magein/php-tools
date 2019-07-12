@@ -206,7 +206,7 @@ class ApiLogin
      * 登录用户的ID
      * @return string
      */
-    public static function id()
+    public function id()
     {
         return defined('LOGIN_USER_ID') ? LOGIN_USER_ID : '';
     }
