@@ -163,7 +163,10 @@ class ApiBehavior
     }
 
     /**
-     * 验证用户登录
+     * 验证用户授权信息是否正常
+     * 这里仅仅只验证header中的授权信息，不验证用户是否异常，
+     * 为了安全起见，应该在验证通过后，验证用户状态，网站性质不同，验证状态不同，关于验证用户状态逻辑请自行封装
+     * 登录后，定义一个常量，用户后续获取用户的唯一标识
      * @param Request $request
      * @param ApiLogin|null $login
      * @return bool
@@ -187,14 +190,15 @@ class ApiBehavior
             $record = $class->verifyToken();
         }
 
-        if (empty($record)) {
+        // 验证授权信息中是否包含user_id(用户唯一标识)
+        if (empty($record) || empty($record['user_id'])) {
             throw new HttpException(1010, '请先登录');
         }
 
-        // 登录用户的ID
-        defined('LOGIN_USER_ID') or define('LOGIN_USER_ID', isset($record['user_id']) ? $record['user_id'] : '');
+        // 验证用户账号信息是否异常
+        defined('API_USER_LOGIN_ID') or define('API_USER_LOGIN_ID', $record['user_id']);
 
-        return true;
+        return $record;
     }
 
     /**

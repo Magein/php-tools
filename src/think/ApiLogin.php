@@ -208,6 +208,6 @@ class ApiLogin
      */
     public function id()
     {
-        return defined('LOGIN_USER_ID') ? LOGIN_USER_ID : '';
+        return defined('API_USER_LOGIN_ID') ? API_USER_LOGIN_ID : '';
     }
 }
