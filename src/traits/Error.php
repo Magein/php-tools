@@ -12,7 +12,7 @@ trait Error
     /**
      * @var int
      */
-    private $code = 0;
+    private $code = 1;
 
     /**
      * @param $code
@@ -56,6 +56,11 @@ trait Error
     public function setError($error = '出错啦~~')
     {
         $this->error = $error;
+
+        // 如果code为1 则修改为0，自定义code则不进行修改
+        if ($this->code == 1) {
+            $this->code = 0;
+        }
 
         return false;
     }
