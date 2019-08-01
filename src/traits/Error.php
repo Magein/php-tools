@@ -4,7 +4,34 @@ namespace magein\php_tools\traits;
 
 trait Error
 {
+    /**
+     * @var string
+     */
     private $error = '';
+
+    /**
+     * @var int
+     */
+    private $code = 0;
+
+    /**
+     * @param $code
+     * @return $this
+     */
+    public function setCode($code)
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCode()
+    {
+        return $this->code;
+    }
 
     /**
      * @return string
