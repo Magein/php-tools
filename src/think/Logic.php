@@ -728,12 +728,22 @@ abstract class Logic
         $this->sql[] = $this->model()->getLastSql();
         $this->lastSql = $this->model()->getLastSql();
 
+        /**
+         * 这里一切的返回都要经过reset，防止之前设置的各种条件以及has等对后续照成污染
+         * @param mixed $result
+         * @return mixed
+         */
+        $reset = function ($result) {
+            $this->reset();
+            return $result;
+        };
+
         if (false === $this->transArray) {
-            return $record;
+            return $reset($reset);
         }
 
         if (empty($record)) {
-            return null;
+            return $reset(null);
         }
 
         $variable = new Variable();
@@ -783,8 +793,9 @@ abstract class Logic
             return $model->toArray();
         };
 
+
         if ($record instanceof Model) {
-            return $toArray($record);
+            return $reset($toArray($record));
         }
 
         $data = [];
@@ -801,10 +812,7 @@ abstract class Logic
             }
         }
 
-        // 清除查询设置的值，防止后续查询污染
-        $this->reset();
-
-        return $data;
+        return $reset($data);
     }
 
     /**

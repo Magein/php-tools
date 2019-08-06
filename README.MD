@@ -67,3 +67,6 @@
  2019-06-19
  * 优化了一个逻辑，在setError的方法中返回false，这样在子类中可以直接使用return $this->setError()了
  * 优化TreeStructure中的title没有办法设置的问题
+ 
+ 2019-08-06
+ * Logic中的条件查询会对上下文查询照成污染，重新优化了该逻辑
