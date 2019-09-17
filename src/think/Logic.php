@@ -649,6 +649,10 @@ abstract class Logic
      */
     public function getResult($limit = 0, $resetKey = true)
     {
+        if ($limit == 0) {
+            $limit = Request::instance()->param('page_size', 15);
+        }
+
         if (empty($this->list)) {
             $this->paginate($limit);
         }
@@ -728,22 +732,12 @@ abstract class Logic
         $this->sql[] = $this->model()->getLastSql();
         $this->lastSql = $this->model()->getLastSql();
 
-        /**
-         * 这里一切的返回都要经过reset，防止之前设置的各种条件以及has等对后续照成污染
-         * @param mixed $result
-         * @return mixed
-         */
-        $reset = function ($result) {
-            $this->reset();
-            return $result;
-        };
-
         if (false === $this->transArray) {
-            return $reset($reset);
+            return $record;
         }
 
         if (empty($record)) {
-            return $reset(null);
+            return null;
         }
 
         $variable = new Variable();
@@ -793,9 +787,8 @@ abstract class Logic
             return $model->toArray();
         };
 
-
         if ($record instanceof Model) {
-            return $reset($toArray($record));
+            return $toArray($record);
         }
 
         $data = [];
@@ -812,7 +805,10 @@ abstract class Logic
             }
         }
 
-        return $reset($data);
+        // 清除查询设置的值，防止后续查询污染
+        $this->reset();
+
+        return $data;
     }
 
     /**
