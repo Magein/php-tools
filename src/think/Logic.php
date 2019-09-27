@@ -567,7 +567,10 @@ abstract class Logic
         $pages['total'] = $records->total();
         $pages['current_page'] = $records->currentPage();
         $pages['last_page'] = $records->lastPage();
-        $pages['has_more'] = $records->hasPages();
+
+        if ($pages['current_page'] >= $pages['last_page']) {
+            $pages['has_more'] = 0;
+        }
 
         $this->pageParams = $pages;
 
