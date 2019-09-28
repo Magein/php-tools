@@ -568,7 +568,7 @@ abstract class Logic
         $pages['current_page'] = $records->currentPage();
         $pages['last_page'] = $records->lastPage();
 
-        if ($pages['current_page'] >= $pages['last_page']) {
+        if ($pages['current_page'] == $pages['last_page']) {
             $pages['has_more'] = 0;
         }
 
