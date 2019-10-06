@@ -15,6 +15,11 @@ class Curl
     private $headers = [];
 
     /**
+     * @var null
+     */
+    private $result = null;
+
+    /**
      * @var array
      */
     private $options = [
@@ -47,11 +52,23 @@ class Curl
     }
 
     /**
-     * @param $url
      * @param bool $dataJson
+     * @return mixed|null
+     */
+    public function getResult($dataJson = true)
+    {
+        if ($this->result !== false && $dataJson) {
+            return json_decode($this->result, true);
+        }
+
+        return $this->result;
+    }
+
+    /**
+     * @param $url
      * @return bool|mixed
      */
-    public function init($url, $dataJson = false)
+    public function init($url)
     {
         /* 初始化并执行curl请求 */
         $ch = curl_init($url);
@@ -60,12 +77,7 @@ class Curl
         $error = curl_error($ch);
         curl_close($ch);
         if ($error) {
-            $this->setError('curl请求错误：' . $error);
-            return false;
-        }
-
-        if ($dataJson) {
-            return json_decode($data, true);
+            return $this->setError('curl请求错误：' . $error);
         }
 
         return $data;
