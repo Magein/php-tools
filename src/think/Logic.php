@@ -548,7 +548,7 @@ abstract class Logic
             // 最后一页
             'last_page' => 1,
             // 是否还要更多
-            'has_more' => 0,
+            'has_more' => 1,
         ];
 
 
@@ -866,6 +866,14 @@ abstract class Logic
     }
 
     /**
+     * @return array
+     */
+    public function clearCache()
+    {
+        return [];
+    }
+
+    /**
      * 新增/编辑
      * 新增则返回主键的值
      * 更新也返回主键的值
@@ -927,6 +935,8 @@ abstract class Logic
             $this->setError(self::ERROR_OPERATION_FAIL);
             return false;
         }
+
+        $this->clearCache();
 
         return $ins_id;
     }
