@@ -4,6 +4,7 @@ namespace magein\php_tools\think;
 
 use magein\php_tools\common\Variable;
 use magein\php_tools\traits\Error;
+use think\Cache;
 use think\Exception;
 use think\exception\DbException;
 use think\Model;
@@ -862,15 +863,9 @@ abstract class Logic
             ]
         );
 
-        return $result;
-    }
+        $this->clearFileStorageFile();
 
-    /**
-     * @return array
-     */
-    public function clearCache()
-    {
-        return [];
+        return $result;
     }
 
     /**
@@ -936,7 +931,7 @@ abstract class Logic
             return false;
         }
 
-        $this->clearCache();
+        $this->clearFileStorageFile();
 
         return $ins_id;
     }
@@ -1013,6 +1008,8 @@ abstract class Logic
 
         $this->setError(self::ERROR_OPERATION_FAIL);
 
+        $this->clearFileStorageFile();
+
         return $result;
     }
 
@@ -1029,6 +1026,49 @@ abstract class Logic
         $records = $model->column($fields, $key);
 
         $this->setCondition([]);
+
+        return $records;
+    }
+
+    /**
+     * @return bool
+     */
+    public function clearFileStorageFile()
+    {
+        return Cache::clear($this->fileStorageTag());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function fileStorageTag()
+    {
+        return str_replace('\\', '.', static::class);
+    }
+
+    /**
+     * 从文件缓存中获取文件数据
+     * @param $name
+     * @param string $field
+     * @param string $tag
+     * @return array|mixed
+     */
+    public function getFileStorageList($name, $field = 'id,title', $tag = null)
+    {
+        if ($this->withTrashed) {
+            $name .= '_all';
+        }
+
+        if (empty($tag)) {
+            $tag = $this->fileStorageTag();
+        }
+
+        $records = Cache::store('file')->get($name);
+
+        if (empty($records)) {
+            $records = $this->column($field);
+            Cache::store('file')->tag($tag)->set($name, $records);
+        }
 
         return $records;
     }
