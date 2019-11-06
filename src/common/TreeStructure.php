@@ -108,6 +108,7 @@ class TreeStructure
     /**
      * 获取树
      * @param $records
+     * @param callable $callback
      * @return array|bool
      */
     public function tree($records, $callback = null)
