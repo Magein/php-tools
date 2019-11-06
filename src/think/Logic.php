@@ -124,6 +124,12 @@ abstract class Logic
     protected $returnArrayKey = 'id';
 
     /**
+     * 本地文件缓存的名称
+     * @var string
+     */
+    protected $fileStorageFileName = '';
+
+    /**
      * @var array
      */
     protected $allowTime = [
@@ -529,6 +535,20 @@ abstract class Logic
         }
 
         return false;
+    }
+
+    /**
+     * 获取从缓存中获取
+     * @return array|mixed
+     */
+    public function getList()
+    {
+        if ($this->condition) {
+            return $this->select();
+        } else {
+            $records = $this->getFileStorageList(implode(',', $this->fields), 'list');
+        }
+        return $records;
     }
 
     /**
@@ -1047,17 +1067,34 @@ abstract class Logic
     }
 
     /**
+     * @param string $name
+     * @return string
+     */
+    private function setFileStorageName($name = '')
+    {
+        if (empty($name)) {
+            $name = 'name';
+        }
+
+        if ($this->withTrashed) {
+            $name .= 'all';
+        }
+
+        return $this->fileStorageTag() . '.' . $name;
+    }
+
+    /**
      * 从文件缓存中获取文件数据
-     * @param $name
      * @param string $field
+     * @param string $name
      * @param string $tag
      * @return array|mixed
      */
-    public function getFileStorageList($name, $field = 'id,title', $tag = null)
+    public function getFileStorageList($field = 'id,title', $name = 'name', $tag = null)
     {
-        if ($this->withTrashed) {
-            $name .= '_all';
-        }
+        $name = $this->setFileStorageName($name);
+
+        $this->fileStorageFileName = $name;
 
         if (empty($tag)) {
             $tag = $this->fileStorageTag();
