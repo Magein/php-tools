@@ -110,7 +110,7 @@ class TreeStructure
      * @param $records
      * @return array|bool
      */
-    public function tree($records)
+    public function tree($records, $callback = null)
     {
         if (empty($records)) {
             return false;
@@ -127,6 +127,11 @@ class TreeStructure
         $result = [];
 
         foreach ($records as $key => $item) {
+
+            if (is_callable($callback)) {
+                $item = call_user_func($callback, $item, $result);
+            }
+
             if (isset($records[$item[$parent_id]])) {
                 $records[$item[$parent_id]]['child'][] = &$records[$key];
             } else {
