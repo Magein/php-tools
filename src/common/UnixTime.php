@@ -98,7 +98,7 @@ class UnixTime
             $month = 1;
         }
 
-        return date('Y-' . $month . '-1');
+        return date('Y-' . $month . '-01');
     }
 
     /**
