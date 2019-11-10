@@ -82,6 +82,84 @@ class UnixTime
     }
 
     /**
+     * 每个月开始的时间
+     * @param null $month
+     * @return false|string
+     */
+    public function monthStart($month = null)
+    {
+        if (empty($month)) {
+            $month = date('m');
+        }
+
+        $month = intval($month);
+
+        if ($month < 1 || $month > 12) {
+            $month = 1;
+        }
+
+        return date('Y-' . $month . '-1');
+    }
+
+    /**
+     * 每个月开始的unix时间
+     * @param null $month
+     * @return bool|false|int
+     */
+    public function monthStartUnix($month = null)
+    {
+        return $this->unix($this->monthStart($month));
+    }
+
+    /**
+     * @param null $month
+     * @return false|string
+     */
+    public function monthEnd($month = null)
+    {
+        $timestamp = ($this->monthStartUnix($month)) - 1;
+
+        $timestamp = strtotime(date('Y-m-d', $timestamp));
+
+        $timestamp = strtotime('+1 month -1 day', $timestamp);
+
+        return $this->date($timestamp);
+    }
+
+    /**
+     * @param null $month
+     * @return bool|false|int
+     */
+    public function monthEndUnix($month = null)
+    {
+        return $this->unix($this->monthEnd($month));
+    }
+
+    /**
+     * @param bool $unix
+     * @param bool $to_array
+     * @return array|string
+     */
+    public function monthRange($unix = true, $to_array = true)
+    {
+        if ($unix) {
+            $start = $this->monthStartUnix();
+            $end = $this->monthEndUnix();
+        } else {
+            $start = $this->monthStart();
+            $end = $this->monthEnd();
+        }
+
+        if ($to_array) {
+            return [
+                $start,
+                $end
+            ];
+        }
+        return $start . ' ~ ' . $end;
+    }
+
+    /**
      * 今天的时间时间戳
      * @return array
      */

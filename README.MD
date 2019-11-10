@@ -80,3 +80,8 @@
   
  2019-11-06
     * Logic中新增getList方法用于获取数据，如果携带条件则从数据库查询
+    
+ 2019-11-10
+    * Curl类新增$url变量和getUrl方法、get请求url使用urldecode进行解码
+    * BaiDuMap类request请求由private修改为public
+    * UnixTime类新增获取月的起始时间和结束时间的方法

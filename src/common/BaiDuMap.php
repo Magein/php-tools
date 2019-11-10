@@ -112,7 +112,7 @@ class BaiDuMap
      * @param $param
      * @return bool
      */
-    private function request($url, $param)
+    public function request($url, $param)
     {
         if (!preg_match('/^http:/', $url)) {
             $url = $this->apiUrl . $url;

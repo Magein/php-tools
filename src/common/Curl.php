@@ -20,6 +20,12 @@ class Curl
     private $result = null;
 
     /**
+     * 请求的url 可用过getUrl获取到，查看请求的url是否正确
+     * @var string
+     */
+    private $url = '';
+
+    /**
      * @var array
      */
     private $options = [
@@ -52,6 +58,14 @@ class Curl
     }
 
     /**
+     * @return string
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
      * @param bool $dataJson
      * @return mixed|null
      */
@@ -70,6 +84,8 @@ class Curl
      */
     public function init($url)
     {
+        $this->url = $url;
+
         /* 初始化并执行curl请求 */
         $ch = curl_init($url);
         curl_setopt_array($ch, $this->options);
@@ -104,7 +120,7 @@ class Curl
     public function get($url, $params = [])
     {
         if ($params) {
-            $url = $url . '?' . http_build_query($params);
+            $url = urldecode($url . '?' . http_build_query($params));
         }
 
         return $this->init($url);
