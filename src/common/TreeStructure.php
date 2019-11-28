@@ -83,6 +83,7 @@ class TreeStructure
 
     /**
      * @param string $sign
+     * @return $this
      */
     public function setSign(string $sign)
     {
