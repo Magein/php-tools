@@ -178,11 +178,6 @@ abstract class Logic
     protected $lastSql = '';
 
     /**
-     * @var array
-     */
-    protected $list = [];
-
-    /**
      * @var null
      */
     protected static $instance = [];
@@ -628,9 +623,9 @@ abstract class Logic
          */
         $this->setPage($records, $limit);
 
-        $this->list = $this->transPaginator($records);
+        $list = $this->transPaginator($records);
 
-        return $this->list;
+        return $list;
     }
 
     /**
@@ -677,13 +672,11 @@ abstract class Logic
             $limit = Request::instance()->param('page_size', 15);
         }
 
-        if (empty($this->list)) {
-            $this->paginate($limit);
-        }
+        $list = $this->paginate($limit);
 
         return [
             'pages' => $this->getPageParams(),
-            'list' => $resetKey ? ($this->list ? array_values($this->list) : []) : $this->list,
+            'list' => $resetKey ? ($list ? array_values($list) : []) : $list,
         ];
     }
 
@@ -1165,7 +1158,7 @@ abstract class Logic
             return false;
         }
 
-        $this->setCondition([]);
+        $this->reset();
 
         return $result;
     }
@@ -1188,7 +1181,7 @@ abstract class Logic
             return false;
         }
 
-        $this->setCondition([]);
+        $this->reset();
 
         return $result;
     }

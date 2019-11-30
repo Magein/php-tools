@@ -24,4 +24,35 @@ class ApiService
         }
         return self::$instance[static::class];
     }
+
+    /**
+     * @param null $result
+     * @return \think\response\Json
+     */
+    public function response($result = null)
+    {
+        return ApiReturn::instance()->create($this->getCode(), $this->getError(), $result);
+    }
+
+    /**
+     * @param $message
+     * @param int $code
+     * @param null $result
+     * @return \think\response\Json
+     */
+    public function success($result = null, $code = 1, $message = '')
+    {
+        return ApiReturn::instance()->create($code, $message, $result);
+    }
+
+    /**
+     * @param $message
+     * @param int $code
+     * @param null $result
+     * @return \think\response\Json
+     */
+    public function error($message, $code = 0, $result = null)
+    {
+        return ApiReturn::instance()->create($code, $message, $result);
+    }
 }
