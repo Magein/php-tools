@@ -66,12 +66,12 @@ class Curl
     }
 
     /**
-     * @param bool $dataJson
+     * @param bool $toArray
      * @return mixed|null
      */
-    public function getResult($dataJson = true)
+    public function getResult($toArray = true)
     {
-        if ($this->result !== false && $dataJson) {
+        if ($this->result !== false && $toArray) {
             return json_decode($this->result, true);
         }
 
@@ -95,6 +95,8 @@ class Curl
         if ($error) {
             return $this->setError('curl请求错误：' . $error);
         }
+
+        $this->result = $data;
 
         return $data;
     }
