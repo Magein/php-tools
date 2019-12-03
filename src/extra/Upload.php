@@ -20,6 +20,18 @@ class Upload
     private $savePath = './uploads/';
 
     /**
+     * 保存的文件名称
+     * @var bool|string
+     */
+    private $saveName = true;
+
+    /**
+     * 同名文件是否覆盖
+     * @var bool
+     */
+    private $replace = true;
+
+    /**
      * @var string
      */
     private $store = 'local';
@@ -31,6 +43,29 @@ class Upload
     public function setSavePath(string $savePath)
     {
         $this->savePath = $savePath;
+
+        return $this;
+    }
+
+    /**
+     * @param string $saveName
+     * @return $this
+     */
+    public function setSaveName(string $saveName)
+    {
+        $this->saveName = $saveName;
+
+        return $this;
+    }
+
+    /**
+     * 同名是否覆盖
+     * @param string $saveName
+     * @return $this
+     */
+    public function setReplace(bool $replace)
+    {
+        $this->replace = $replace;
 
         return $this;
     }
@@ -79,7 +114,7 @@ class Upload
             $rule['ext'] = $ext;
         }
 
-        $info = $file->validate($rule)->move($this->savePath);
+        $info = $file->validate($rule)->move($this->savePath, $this->saveName);
 
         /**
          * 这里要区别于保存路径和展示路径
