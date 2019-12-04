@@ -83,7 +83,6 @@ class TreeStructure
 
     /**
      * @param string $sign
-     * @return $this
      */
     public function setSign(string $sign)
     {
@@ -188,11 +187,6 @@ class TreeStructure
                         $this->level = $val['level'];
                     }
 
-
-                    if (is_callable($callback)) {
-                        $val = call_user_func($callback, $val, $result);
-                    }
-
                     if (isset($result[$val['pid']])) {
                         $val['node'] = $result[$val['pid']]['node'] . '_' . $val['id'];
                     } else {
@@ -200,6 +194,10 @@ class TreeStructure
                     }
 
                     $val['node'] = preg_replace('/^0_/', '', $val['node']);
+
+                    if (is_callable($callback)) {
+                        $val = call_user_func($callback, $val, $result);
+                    }
 
                     $result[$val['id']] = $val;
 
