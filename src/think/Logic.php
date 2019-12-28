@@ -178,6 +178,11 @@ abstract class Logic
     protected $lastSql = '';
 
     /**
+     * @var array
+     */
+    protected $list = [];
+
+    /**
      * @var null
      */
     protected static $instance = [];
@@ -623,9 +628,9 @@ abstract class Logic
          */
         $this->setPage($records, $limit);
 
-        $list = $this->transPaginator($records);
+        $this->list = $this->transPaginator($records);
 
-        return $list;
+        return $this->list;
     }
 
     /**
@@ -672,11 +677,13 @@ abstract class Logic
             $limit = Request::instance()->param('page_size', 15);
         }
 
-        $list = $this->paginate($limit);
+        if (empty($this->list)) {
+            $this->paginate($limit);
+        }
 
         return [
             'pages' => $this->getPageParams(),
-            'list' => $resetKey ? ($list ? array_values($list) : []) : $list,
+            'list' => $resetKey ? ($this->list ? array_values($this->list) : []) : $this->list,
         ];
     }
 
@@ -748,6 +755,9 @@ abstract class Logic
     {
         $this->sql[] = $this->model()->getLastSql();
         $this->lastSql = $this->model()->getLastSql();
+
+        // 清除查询设置的值，防止后续查询污染
+        $this->reset();
 
         if (false === $this->transArray) {
             return $record;
@@ -821,9 +831,6 @@ abstract class Logic
                 }
             }
         }
-
-        // 清除查询设置的值，防止后续查询污染
-        $this->reset();
 
         return $data;
     }
@@ -1158,7 +1165,7 @@ abstract class Logic
             return false;
         }
 
-        $this->reset();
+        $this->setCondition([]);
 
         return $result;
     }
@@ -1181,7 +1188,7 @@ abstract class Logic
             return false;
         }
 
-        $this->reset();
+        $this->setCondition([]);
 
         return $result;
     }
