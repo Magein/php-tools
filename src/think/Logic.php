@@ -756,6 +756,7 @@ abstract class Logic
         $this->sql[] = $this->model()->getLastSql();
         $this->lastSql = $this->model()->getLastSql();
 
+
         if (false === $this->transArray) {
             // 清除查询设置的值，防止后续查询污染
             $this->reset();
@@ -814,6 +815,7 @@ abstract class Logic
         };
 
         if ($record instanceof Model) {
+            $this->reset();
             return $toArray($record);
         }
 
