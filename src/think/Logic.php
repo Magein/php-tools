@@ -769,11 +769,13 @@ abstract class Logic
 
         $variable = new Variable();
 
+
         /**
          * @param Model $model
+         * @param bool $reset
          * @return array
          */
-        $toArray = function (Model $model) use ($variable) {
+        $toArray = function (Model $model, $reset = true) use ($variable) {
 
             if ($this->appendAttr) {
                 $model->append($this->appendAttr);
@@ -811,11 +813,14 @@ abstract class Logic
                 }
             }
 
+            if ($reset) {
+                $this->reset();
+            }
+
             return $model->toArray();
         };
 
         if ($record instanceof Model) {
-            $this->reset();
             return $toArray($record);
         }
 
@@ -823,7 +828,7 @@ abstract class Logic
         if (is_array($record)) {
             foreach ($record as $item) {
                 if ($item instanceof Model) {
-                    $result = $toArray($item);
+                    $result = $toArray($item, false);
                     if ($this->returnArrayKey && $result[$this->returnArrayKey]) {
                         $data[$result[$this->returnArrayKey]] = $result;
                     } else {
