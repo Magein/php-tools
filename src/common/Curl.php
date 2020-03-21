@@ -26,6 +26,11 @@ class Curl
     private $url = '';
 
     /**
+     * @var string
+     */
+    private $postData = '';
+
+    /**
      * @var array
      */
     private $options = [
@@ -41,7 +46,7 @@ class Curl
      */
     public function setHeaders($headers)
     {
-        $this->headers = $headers;
+        $this->options[CURLOPT_HTTPHEADER] = $headers;
 
         return $this;
     }
@@ -63,6 +68,14 @@ class Curl
     public function getUrl()
     {
         return $this->url;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPostData()
+    {
+        return $this->postData;
     }
 
     /**
@@ -88,6 +101,7 @@ class Curl
 
         /* 初始化并执行curl请求 */
         $ch = curl_init($url);
+
         curl_setopt_array($ch, $this->options);
         $data = curl_exec($ch);
         $error = curl_error($ch);
@@ -108,6 +122,9 @@ class Curl
      */
     public function post($url, $params = [])
     {
+        /**
+         * 请注意订单支付的时候获取第三方的二维码
+         */
         $this->options[CURLOPT_POST] = 1;
         $this->options[CURLOPT_POSTFIELDS] = $params;
 

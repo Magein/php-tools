@@ -5,7 +5,6 @@ namespace magein\php_tools\common;
 
 use magein\php_tools\traits\Error;
 use magein\php_tools\traits\Instance;
-use magein\render\admin\RenderForm;
 
 /**
  * 处理时间
@@ -17,6 +16,12 @@ class UnixTime
     use Instance;
 
     use Error;
+
+    /**
+     * 当获取周、月的时间段的时候，是否包含今天
+     * @var bool
+     */
+    private $contain_today = true;
 
     /**
      * 转化为时间戳
@@ -58,6 +63,10 @@ class UnixTime
     {
         if (empty($date)) {
             $date = date('Y-m-d', time());
+        } else {
+            if (strlen($date) > 10) {
+                $date = substr($date, 0, 10);
+            }
         }
 
         $datetime = $date . ' 23:59:59';
@@ -74,6 +83,10 @@ class UnixTime
     {
         if (empty($date)) {
             $date = date('Y-m-d', time());
+        } else {
+            if (strlen($date) > 10) {
+                $date = substr($date, 0, 10);
+            }
         }
 
         $datetime = $date . ' 00:00:00';
@@ -82,7 +95,18 @@ class UnixTime
     }
 
     /**
-     * 每个月开始的时间
+     * @param bool $bool
+     * @return $this
+     */
+    public function setContainToday($bool = true)
+    {
+        $this->contain_today = $bool === true ? true : false;
+
+        return $this;
+    }
+
+    /**
+     * 每个月的开始时间是固定的 xx月-01开始
      * @param null $month
      * @return false|string
      */
@@ -92,13 +116,31 @@ class UnixTime
             $month = date('m');
         }
 
-        $month = intval($month);
+        if (strlen($month) > 2) {
+            $month = date('m', $this->unix($month));
+        } else {
+            $month = intval($month);
+        }
 
         if ($month < 1 || $month > 12) {
             $month = 1;
         }
 
         return date('Y-' . $month . '-01');
+    }
+
+    /**
+     * 获取每个月的结束时间
+     * @param null $month
+     * @return false|string
+     */
+    public function monthEnd($month = null)
+    {
+        $timestamp = ($this->monthStartUnix($month));
+
+        $timestamp = strtotime('+1 month', $timestamp) - 1;
+
+        return $this->date($timestamp);
     }
 
     /**
@@ -113,21 +155,6 @@ class UnixTime
 
     /**
      * @param null $month
-     * @return false|string
-     */
-    public function monthEnd($month = null)
-    {
-        $timestamp = ($this->monthStartUnix($month)) - 1;
-
-        $timestamp = strtotime(date('Y-m-d', $timestamp));
-
-        $timestamp = strtotime('+1 month -1 day', $timestamp);
-
-        return $this->date($timestamp);
-    }
-
-    /**
-     * @param null $month
      * @return bool|false|int
      */
     public function monthEndUnix($month = null)
@@ -136,27 +163,33 @@ class UnixTime
     }
 
     /**
-     * @param bool $unix
-     * @param bool $to_array
+     * 获取自然月的范围
+     * @param string $date
+     * @param string $format
      * @return array|string
      */
-    public function monthRange($unix = true, $to_array = true)
+    public function monthRange($date = '', $format = 'unix')
     {
-        if ($unix) {
-            $start = $this->monthStartUnix();
-            $end = $this->monthEndUnix();
+        if ($format === 'unix') {
+            $start = $this->monthStartUnix($date);
+            $end = $this->monthEndUnix($date);
         } else {
-            $start = $this->monthStart();
-            $end = $this->monthEnd();
+            $start = $this->monthStart($date);
+            $end = $this->monthEnd($date);
+
+            var_dump($start);
+            var_dump($end);
+
+            if ($format === 'datetime') {
+                $start .= ' 00:00:00';
+                $end .= ' 23:59:59';
+            }
         }
 
-        if ($to_array) {
-            return [
-                $start,
-                $end
-            ];
-        }
-        return $start . ' ~ ' . $end;
+        return [
+            $start,
+            $end
+        ];
     }
 
     /**
@@ -200,5 +233,80 @@ class UnixTime
     public function time($unix_time = '')
     {
         return $this->dateTime($unix_time, 'H:i:s');
+    }
+
+    /**
+     * 获取日期所在的自然周范围
+     * @param string $date
+     * @param bool $to_unix
+     * @return array
+     */
+    public function weekRange($date = '', $to_unix = true)
+    {
+        if (empty($date)) {
+            $date = $this->date();
+        }
+
+        $date = $this->unix(substr($date, 0, 10));
+
+        if (false === $date) {
+            return [];
+        }
+
+        $week_start_day = strtotime('this week', $date);
+        $week_end_day = $week_start_day + 86400 * 7 - 1;
+
+        if ($to_unix) {
+            $result = [
+                $week_start_day,
+                $week_end_day
+            ];
+        } else {
+            $result = [
+                $this->dateTime($week_start_day),
+                $this->dateTime($week_end_day),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * 传递的时间往前推一周，即七天的数据
+     * @param string $date
+     * @param bool $to_unix
+     * @return array
+     */
+    public function weekEnd($date = '', $to_unix = true)
+    {
+        if (empty($date)) {
+            $date = $this->date();
+        }
+
+        if (false === $date) {
+            return [];
+        }
+
+        $week_end_day = $this->unix(substr($date, 0, 10));
+
+        if ($this->contain_today) {
+            $week_end_day = $week_end_day + 86400 - 1;
+        }
+
+        $week_start_day = $week_end_day - 86400 * 7;
+
+        if ($to_unix) {
+            $result = [
+                $week_start_day,
+                $week_end_day
+            ];
+        } else {
+            $result = [
+                $this->dateTime($week_start_day),
+                $this->dateTime($week_end_day),
+            ];
+        }
+
+        return $result;
     }
 }

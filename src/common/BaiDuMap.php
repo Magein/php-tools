@@ -33,6 +33,50 @@ class BaiDuMap
     private $result = [];
 
     /**
+     * 发送请求之前的回调
+     * @var null
+     */
+    private $before = null;
+
+    /**
+     * 发送请求之后的回调
+     * @var null
+     */
+    private $after = null;
+
+    public function __construct()
+    {
+        $this->initialize();
+    }
+
+    public function initialize()
+    {
+
+    }
+
+    /**
+     * @param $before
+     * @return $this
+     */
+    public function setBefore(callable $before)
+    {
+        $this->before = $before;
+
+        return $this;
+    }
+
+    /**
+     * @param $after
+     * @return $this
+     */
+    public function setAfter(callable $after)
+    {
+        $this->after = $after;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getAk(): string
@@ -118,19 +162,27 @@ class BaiDuMap
             $url = $this->apiUrl . $url;
         }
 
+        if ($this->before) {
+            call_user_func($this->before, $url, $param);
+        }
+
         $result = Curl::instance()->get($url, $this->concatParam($param));
+        
+        if ($this->after) {
+            call_user_func($this->after, $url, $result, $param);
+        }
 
         if (false === $result) {
             return $this->setError(Curl::instance()->getError());
         }
 
         $result = json_decode($result, true);
-
         if (isset($result['status']) && $result['status'] != 0) {
             return $this->setError($result['message']);
         }
 
         $this->result = $result;
+
 
         return $result;
     }
