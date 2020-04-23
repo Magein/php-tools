@@ -167,7 +167,7 @@ class BaiDuMap
         }
 
         $result = Curl::instance()->get($url, $this->concatParam($param));
-        
+
         if ($this->after) {
             call_user_func($this->after, $url, $result, $param);
         }
