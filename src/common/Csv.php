@@ -76,6 +76,20 @@ class Csv
         return $result;
     }
 
+    public function header($fileName)
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        if (preg_match("/MSIE/", $_SERVER['HTTP_USER_AGENT'])) {
+            header('Content-Disposition:  attachment; filename="' . $fileName . '"');
+        } else {
+            if (preg_match("/Firefox/", $_SERVER['HTTP_USER_AGENT'])) {
+                header('Content-Disposition: attachment; filename*="utf8' . $fileName . '"');
+            } else {
+                header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            }
+        }
+    }
+
     /**
      * @param array $header
      * @param array $formData
@@ -110,17 +124,91 @@ class Csv
 
         $fileName = $this->getFileName($fileName);
 
-        header('Content-Type: text/csv; charset=utf-8');
-        if (preg_match("/MSIE/", $_SERVER['HTTP_USER_AGENT'])) {
-            header('Content-Disposition:  attachment; filename="' . $fileName . '"');
-        } else {
-            if (preg_match("/Firefox/", $_SERVER['HTTP_USER_AGENT'])) {
-                header('Content-Disposition: attachment; filename*="utf8' . $fileName . '"');
-            } else {
-                header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        $this->exec($fileName, $string);
+    }
+
+    /**
+     * @param $filepath
+     * @param $filename
+     * @return bool
+     */
+    public function read($filepath, $filename = '')
+    {
+        if (!is_file($filepath)) {
+            return false;
+        }
+
+        if (empty($filename)) {
+            $filename = date('YmdHis');
+        }
+
+        $content = file_get_contents($filepath);
+        $this->exec($filename, $content);
+
+        return true;
+    }
+
+    public function exec($fileName, $content)
+    {
+        $this->header($fileName);
+        echo "\xEF\xBB\xBF" . $content;
+        exit();
+    }
+
+    /**
+     * @param array $header
+     * @param array $formData
+     * @param string $fileName
+     * @return bool|string|null
+     */
+    public function save($header = [], $formData = [], $fileName = '')
+    {
+        if (empty($formData)) {
+            return false;
+        }
+
+        if (is_array($header)) {
+            $header = implode(',', $header);
+        }
+
+        $string = '';
+
+        if ($header) {
+            $string = $header . "\n";
+        }
+
+        foreach ($formData as $item) {
+            if (is_array($item)) {
+                $tmp = '';
+                foreach ($item as $val) {
+                    $tmp .= '"' . preg_replace('/(["])/', '"$1', $val) . '"' . ',';
+                }
+                $string .= trim($tmp, ',') . "\n";
             }
         }
-        echo "\xEF\xBB\xBF" . $string;
-        exit();
+
+        $fileName = $this->getFileName($fileName);
+
+        $path = pathinfo($fileName, PATHINFO_DIRNAME);
+
+        if (!is_dir($path)) {
+            if (!mkdir($path, 0777, true)) {
+                return false;
+            }
+        }
+
+        if (is_file($fileName)) {
+            return $fileName;
+        }
+
+        $string = "\xEF\xBB\xBF" . $string;
+
+        $result = file_put_contents($fileName, $string);
+
+        if ($result) {
+            return $fileName;
+        }
+
+        return false;
     }
 }
