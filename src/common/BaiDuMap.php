@@ -178,7 +178,7 @@ class BaiDuMap
 
         $result = json_decode($result, true);
         if (isset($result['status']) && $result['status'] != 0) {
-            return $this->setError($result['message']);
+            return $this->setError($result['msg']);
         }
 
         $this->result = $result;
@@ -202,5 +202,45 @@ class BaiDuMap
         }
 
         return false;
+    }
+
+    /**
+     * @param array $result
+     * @param bool $text
+     * @return mixed|string
+     */
+    public function transLocationPrecision($result = [], $text = true)
+    {
+        if (empty($result)) {
+            $result = $this->result['result'] ?? [];
+        }
+
+        $precise = 'low';
+        if (isset($result['precise'])) {
+            if ($result['precise'] == 1) {
+                $precise = 'high';
+            } elseif (in_array($result['level'], ['城市', '区县'])) {
+                $precise = 'low';
+            } else {
+                $precise = 'common';
+            }
+        }
+
+        $trans = [
+            'low' => '低',
+            'common' => '一般',
+            'high' => '高'
+        ];
+
+        $desc = $trans[$precise] ?? '低';
+
+        if ($text) {
+            return $desc;
+        }
+
+        return [
+            'level' => $precise,
+            'text' => $desc,
+        ];
     }
 }
