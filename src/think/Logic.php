@@ -569,7 +569,7 @@ abstract class Logic
             // 最后一页
             'last_page' => 1,
             // 是否还要更多
-            'has_more' => 1,
+            'has_more' => 0,
         ];
 
 
