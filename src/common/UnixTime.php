@@ -126,6 +126,8 @@ class UnixTime
             $month = 1;
         }
 
+        $month = str_pad($month, 2, 0, STR_PAD_LEFT);
+
         return date('Y-' . $month . '-01');
     }
 
@@ -177,9 +179,6 @@ class UnixTime
             $start = $this->monthStart($date);
             $end = $this->monthEnd($date);
 
-            var_dump($start);
-            var_dump($end);
-
             if ($format === 'datetime') {
                 $start .= ' 00:00:00';
                 $end .= ' 23:59:59';
@@ -212,6 +211,8 @@ class UnixTime
 
         if (empty($unix_time)) {
             $unix_time = time();
+        } else {
+            $unix_time = $this->unix($unix_time);
         }
 
         return date($format, $unix_time);
