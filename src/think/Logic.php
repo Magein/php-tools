@@ -1032,10 +1032,9 @@ abstract class Logic
         $result = $record->save();
 
         if (false === $result) {
+            $this->setError(self::ERROR_OPERATION_FAIL);
             return false;
         }
-
-        $this->setError(self::ERROR_OPERATION_FAIL);
 
         $this->clearFileStorageFile();
 
