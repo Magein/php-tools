@@ -80,8 +80,8 @@ class RandString
 
         if ($filter) {
             $lower_letter = preg_replace('/o|z/', '', $lower_letter);
-            $upper_letter = preg_replace('/O|Z/', '', $lower_letter);
-            $number = preg_replace('/0|2/', '', $lower_letter);
+            $upper_letter = preg_replace('/O|Z/', '', $upper_letter);
+            $number = preg_replace('/0|2/', '', $number);
         }
 
         switch ($type) {
